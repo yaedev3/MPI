@@ -7,14 +7,16 @@ double f(double x);
 
 void main()
 {
+    /* Declaration */
     int n;
     double a, b, h, local_int, local_a, local_b;
 
+    /* Assignment */
     n = 1024;
     a = 0.0;
     b = 14.0;
-    h = (b - a) / n; /* h is the same for all processes */
-
+    h = (b - a) / n; 
+    
     local_a = a + h;
     local_b = local_a + h;
     local_int = Trap(local_a, local_b, n, h);

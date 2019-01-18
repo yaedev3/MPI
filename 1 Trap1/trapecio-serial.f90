@@ -1,6 +1,7 @@
 program trap1
 implicit none
 
+! Calculate local integral
 INTERFACE 
    SUBROUTINE Trap(left_endpt, right_endpt, trap_count, base_len, estimate)
     REAL, INTENT(IN) :: left_endpt, right_endpt, base_len
@@ -9,13 +10,15 @@ INTERFACE
    END SUBROUTINE Trap
 END INTERFACE
 
+! Declaration of variables
 integer :: n
 real :: a, b, h, local_int, local_a, local_b
 
+! Assignment
 n = 1024
 a = 0.0
 b = 14.0
-h = (b - a) / n; ! h is the same for all processes 
+h = (b - a) / n;
 
 local_a = a + h
 local_b = local_a + h
@@ -29,7 +32,15 @@ end program trap1
 
 !---------------------------------------------------------------------
 !
-!  Subroutine to 
+!  Subroutine for estimating a definite integral 
+!  using the trapezoidal rule
+! Input args:   left_endpt
+!               right_endpt
+!               trap_count 
+!               base_len
+! Output val:   Trapezoidal rule estimate of integral from
+!               left_endpt to right_endpt using trap_count
+!               trapezoids
 !
 !---------------------------------------------------------------------
 SUBROUTINE Trap(left_endpt, right_endpt, trap_count, base_len, estimate)
@@ -50,6 +61,6 @@ do i = 1, trap_count, 1
 
 end do
 
-estimate = estimate * base_len / 100
+estimate = estimate * base_len
 
 END SUBROUTINE Trap
