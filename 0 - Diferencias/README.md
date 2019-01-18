@@ -44,7 +44,7 @@
    7. LOCK and UNLOCK
    8. MOVE_ALLOC intrinsic
 
-## Referencias 
+## REFERENCES 
 
 [Co-Array Fortran What is it? Why should you put it on BlueGene/L?](https://asc.llnl.gov/computing_resources/bluegenel/papers/numrich.pdf)
 
