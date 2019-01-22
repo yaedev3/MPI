@@ -1,4 +1,4 @@
-/* File: helloworld.c
+/* File: helloworld-mpi.c
  *
  * Purpose: 
  * 
@@ -6,9 +6,9 @@
  * 
  * Output:
  * 
- * Compile: mpicc -o helloworld-mpi.o helloworld-mpi.c
+ * Compile: mpicc -o helloworld-mpi-c.o helloworld-mpi.c
  * 
- * Run: mpiexec -np 10 ./helloworld-mpi.o
+ * Run: mpiexec -np 10 ./helloworld-mpi-c.o
  * 
  * Algorithm:
  * 

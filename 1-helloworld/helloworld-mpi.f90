@@ -6,9 +6,9 @@
 ! 
 ! Output:
 ! 
-! Compile: mpif90 -o helloworld-mpi.o helloworld-mpi.f90
+! Compile: mpif90 -o helloworld-mpi-f90.o helloworld-mpi.f90
 ! 
-! Run: mpiexec -np 10 ./helloworld-mpi.o
+! Run: mpiexec -np 10 ./helloworld-mpi-f90.o
 ! 
 ! Algorithm:
 ! 

@@ -6,9 +6,9 @@
 ! 
 ! Output:
 ! 
-! Compile: gfortran -o helloworld.o helloworld.f90
+! Compile: gfortran -o helloworld-f90.o helloworld.f90
 ! 
-! Run: ./helloworld.o
+! Run: ./helloworld-f90.o
 ! 
 ! Algorithm:
 ! 

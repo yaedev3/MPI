@@ -6,9 +6,9 @@
  * 
  * Output:
  * 
- * Compile: gcc -o helloworld.o helloworld.c
+ * Compile: gcc -o helloworld-c.o helloworld.c
  * 
- * Run: ./helloworld.o
+ * Run: ./helloworld-c.o
  * 
  * Algorithm:
  * 
