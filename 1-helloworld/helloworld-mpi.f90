@@ -14,7 +14,7 @@
 ! 
 ! Note:
 
-program name
+program helloworld
 implicit none
 include 'mpif.h'
 
@@ -27,4 +27,4 @@ call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 print*, 'Hello world! from process ', rank
 call MPI_FINALIZE(ierror)
     
-end program name
+end program helloworld

@@ -14,9 +14,9 @@
 ! 
 ! Note:
 
-program name
+program helloworld
 implicit none
 
 write(*, *) 'Hello world! in FORTRAN'
 
-end program name
+end program helloworld
