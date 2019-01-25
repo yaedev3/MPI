@@ -22,7 +22,6 @@
 void PrintMatrix(float *array, int size, char name[]);
 void FillMatrix(float *array, int size);
 void Multiply(float *matrixA, float *matrixB, float *matrixC, int size);
-float MultiplyArray(float *matrixA, float *matrixB, int size, int x, int y);
 
 void main()
 {
@@ -63,20 +62,15 @@ void FillMatrix(float *array, int size)
 
 void Multiply(float *matrixA, float *matrixB, float *matrixC, int size)
 {
-	int i, j;
+	int i, j, k;
+	float result;
 
 	for (i = 0; i < size; i++)
 		for (j = 0; j < size; j++)
-			*(matrixC + (i * size) + j) = MultiplyArray(matrixA, matrixB, size, i, j);
-}
-
-float MultiplyArray(float *matrixA, float *matrixB, int size, int x, int y)
-{
-	int i;
-	float r = 0.0;
-
-	for (i = 0; i < size; i++)
-		r += *(matrixA + (x * size) + i) * *(matrixB + (i * size) + y);
-
-	return r;
+		{
+			result = 0.0;
+			for (k = 0; k < size; k++)
+				result += *(matrixA + (i * size) + k) * *(matrixB + (k * size) + j);
+			*(matrixC + (i * size) + j) = result;
+		}
 }

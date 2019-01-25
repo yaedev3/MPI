@@ -15,16 +15,21 @@
 ! Note:
 
 program helloworld
-implicit none
-include 'mpif.h'
+    implicit none
+    include 'mpif.h'
 
-CHARACTER *20 msg
-INTEGER rank, size, ierror, tag, status(MPI_STATUS_SIZE)
+    INTEGER :: rank
+    INTEGER :: size
+    INTEGER :: ierror
+    INTEGER :: tag
+    INTEGER :: status(MPI_STATUS_SIZE)
 
-call MPI_INIT(ierror)
-call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
-call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
-print*, 'Hello world! from process ', rank
-call MPI_FINALIZE(ierror)
+    call MPI_INIT(ierror)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
+    call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+
+    print *, 'Hello world! from process ', rank
+
+    call MPI_FINALIZE(ierror)
     
 end program helloworld

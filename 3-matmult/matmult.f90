@@ -3,7 +3,7 @@
 ! Purpose: 
 ! 
 ! Input:
-! 
+!  
 ! Output:
 ! 
 ! Compile: gfortran -o matmult-f90.o matmult.f90
@@ -29,15 +29,18 @@ program matmult
         end subroutine FillMatrix
 
         subroutine Multiply(MatrixA, MatrixB, MatrixC, size)
-            REAL, INTENT(IN) :: MatrixA(:), MatrixB(:)
+            REAL, INTENT(IN) :: MatrixA(:)
+            REAL, INTENT(IN) :: MatrixB(:)
             REAL, INTENT(OUT) :: MatrixC(:)
             INTEGER, INTENT(IN) :: size
         end subroutine Multiply
 
     END INTERFACE
 
-    INTEGER :: size = 2
-    REAL, DIMENSION(4) :: matrixA, matrixB, matrixC;
+    INTEGER, PARAMETER :: size = 2
+    REAL, DIMENSION(size * size) :: matrixA
+    REAL, DIMENSION(size * size) :: matrixB
+    REAL, DIMENSION(size * size) :: matrixC
 
     call FillMatrix(matrixA, size)
     call FillMatrix(matrixB, size)
@@ -54,7 +57,8 @@ subroutine PrintMatrix(array, size)
     IMPLICIT NONE
     REAL, INTENT(IN) :: array(:)
     INTEGER, INTENT(IN) :: size
-    INTEGER :: i, j
+    INTEGER :: i
+    INTEGER :: j
 
     do i = 0, size - 1, 1
         do j = 0, size - 1, 1
@@ -68,7 +72,8 @@ subroutine FillMatrix(array, size)
     IMPLICIT NONE
     REAL, INTENT(OUT) :: array(:)
     INTEGER, INTENT(IN) :: size
-    INTEGER :: i, j
+    INTEGER :: i
+    INTEGER :: j
 
     do i = 0, size - 1, 1
         do j = 0, size, 1
@@ -80,10 +85,13 @@ end subroutine FillMatrix
 
 subroutine Multiply(MatrixA, MatrixB, MatrixC, size)
     IMPLICIT NONE
-    REAL, INTENT(IN) :: MatrixA(:), MatrixB(:)
+    REAL, INTENT(IN) :: MatrixA(:)
+    REAL, INTENT(IN) :: MatrixB(:)
     REAL, INTENT(OUT) :: MatrixC(:)
     INTEGER, INTENT(IN) :: size
-    INTEGER :: i, j, k
+    INTEGER :: i
+    INTEGER :: j
+    INTEGER :: k
     REAL :: result
 
     do i = 0, size - 1, 1
