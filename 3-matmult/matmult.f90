@@ -76,7 +76,7 @@ subroutine FillMatrix(array, size)
     INTEGER :: j
 
     do i = 0, size - 1, 1
-        do j = 0, size, 1
+        do j = 0, size - 1, 1
             array(i * size + j)  = rand(i)
         end do
     end do

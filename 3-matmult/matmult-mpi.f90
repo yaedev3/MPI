@@ -29,21 +29,23 @@ program matmult
             INTEGER, INTENT(IN) :: size
         end subroutine FillMatrix
 
-        subroutine Multiply(MatrixA, MatrixB, MatrixC, size)
+        subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
             REAL, INTENT(IN) :: MatrixA(:)
             REAL, INTENT(IN) :: MatrixB(:)
             REAL, INTENT(OUT) :: MatrixC(:)
-            INTEGER, INTENT(IN) :: size
+            INTEGER, INTENT(IN) :: sizeX
+            INTEGER, INTENT(IN) :: sizeY
         end subroutine Multiply
 
     END INTERFACE
 
-    INTEGER :: size = 3
-    REAL, DIMENSION(25) :: matrixA
-    REAL, DIMENSION(25) :: matrixB
-    REAL, DIMENSION(25) :: matrixC
+    INTEGER, PARAMETER :: size = 3
+    REAL, DIMENSION(size * size) :: matrixA
+    REAL, DIMENSION(size * size) :: matrixB
+    REAL, DIMENSION(size * size) :: matrixC
     INTEGER :: rank 
-    INTEGER :: proccess
+    INTEGER :: process
+    INTEGER :: processSize
     INTEGER :: ierror
     INTEGER :: status(MPI_STATUS_SIZE)
     INTEGER :: waste
@@ -51,30 +53,53 @@ program matmult
     INTEGER :: i
 
     call MPI_INIT(ierror)
-    call MPI_COMM_SIZE(MPI_COMM_WORLD, proccess, ierror)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, process, ierror)
     call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 
-    waste = mod(size, proccess - 1)
-    
-    if ((size - waste) == 0) then
-        n = 0
-    else
-        n = (size - waste) / (proccess - 1)
-        write (*, *) waste, n
-    end if 
+    waste = mod(size, process - 1)
+    n = size / (process - 1)
 
     if (rank == 0) then
 
         call FillMatrix(matrixA, size)
         call FillMatrix(matrixB, size)
-        call PrintMatrix(matrixA, size)
-        call PrintMatrix(matrixB, size)
-        write (*, *) waste, n
 
     end if
 
-    !call Multiply(MatrixA, MatrixB, MatrixC, size)
-    !call PrintMatrix(matrixC, size)
+    call MPI_BCAST(matrixA, size * size, MPI_REAL, 0, MPI_COMM_WORLD, ierror)
+    call MPI_BCAST(matrixB, size * size, MPI_REAL, 0, MPI_COMM_WORLD, ierror)
+    write (*, *) process, rank, n
+
+    if (rank == 0) then
+        
+        processSize = n
+
+        do i = 1, process - 1, 1
+
+            if (i == process - 1) then
+                processSize = waste + n
+            end if
+
+            call MPI_RECV(matrixC + ((i - 1) * size * n), processSize * size, MPI_REAL, i, 0, MPI_COMM_WORLD, ierror)
+
+        end do
+        call PrintMatrix(matrixA, size)
+        call PrintMatrix(matrixB, size)
+        call PrintMatrix(matrixC, size)
+
+    else 
+
+        if (rank == process - 1) then
+            processSize = waste + n;
+        else
+            processSize = n;
+        end if
+
+        call Multiply(matrixA, matrixB, matrixC, processSize, size)
+        call MPI_SEND(matrixC, processSize * size, MPI_REAL, 0, 0, MPI_COMM_WORLD)
+
+    end if
+
     call MPI_FINALIZE(ierror)
 
 end program matmult
@@ -100,29 +125,32 @@ subroutine FillMatrix(array, size)
     INTEGER :: i, j
 
     do i = 0, size - 1, 1
-        do j = 0, size, 1
+        do j = 0, size - 1, 1
             array(i * size + j)  = rand(i)
         end do
     end do
 
 end subroutine FillMatrix
 
-subroutine Multiply(MatrixA, MatrixB, MatrixC, size)
+subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
     IMPLICIT NONE
     REAL, INTENT(IN) :: MatrixA(:)
     REAL, INTENT(IN) :: MatrixB(:)
     REAL, INTENT(OUT) :: MatrixC(:)
-    INTEGER, INTENT(IN) :: size
+    INTEGER, INTENT(IN) :: sizeX
+    INTEGER, INTENT(IN) :: sizeY
     INTEGER :: i, j, k
     REAL :: result
 
-    do i = 0, size - 1, 1
-        do j = 0, size - 1, 1
-            result = 0
-            do k = 0, size - 1, 1
-                result = result + matrixA(i * size + k) * matrixB(k * size + j)
+    do i = 0, sizeX - 1, 1
+        do j = 0, sizeY - 1, 1
+
+            result = 0.0
+            do k = 0, sizeY - 1, 1
+                result = result + matrixA(i * sizeY + k) * matrixB(k * sizeY + j)
             end do
-            matrixC(i * size + j) = result
+            matrixC(i * sizeY + j) = result
+        
         end do
     end do
 
