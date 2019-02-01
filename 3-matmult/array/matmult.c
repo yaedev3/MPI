@@ -19,8 +19,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-void PrintMatrix(float *array, int size, char name[]);
-void FillMatrix(float *array, int size);
+void PrintMatrix(float *matrix, int size, char name[]);
+void FillMatrix(float *matrix, int size);
 void Multiply(float *matrixA, float *matrixB, float *matrixC, int size);
 
 void main()
@@ -31,33 +31,34 @@ void main()
 	FillMatrix(matrixA, size);
 	FillMatrix(matrixB, size);
 
-	PrintMatrix(matrixA, size, "matrixA");
-	PrintMatrix(matrixB, size, "matrixB");
 	Multiply(matrixA, matrixB, matrixC, size);
-	PrintMatrix(matrixC, size, "matrixC");
+
+	PrintMatrix(matrixA, size, "Matrix A");
+	PrintMatrix(matrixB, size, "Matrix B");
+	PrintMatrix(matrixC, size, "Matrix C (result)");
 }
 
-void PrintMatrix(float *array, int size, char name[])
+void PrintMatrix(float *matrix, int size, char name[])
 {
 	int i, j;
 
-	printf("Print Array %s\n", name);
+	printf("%s\n", name);
 
 	for (i = 0; i < size; i++)
 	{
 		for (j = 0; j < size; j++)
-			printf("%.2f\t", *(array + (i * size) + j));
+			printf("%.2f\t", matrix[(i * size) + j]);
 		printf("\n");
 	}
 }
 
-void FillMatrix(float *array, int size)
+void FillMatrix(float *matrix, int size)
 {
 	int i, j;
 
 	for (i = 0; i < size; i++)
 		for (j = 0; j < size; j++)
-			*(array + (i * size) + j) = rand() % (11 * (i + 1)) * 1.12;
+			matrix[(i * size) + j] = rand() % (11 * (i + 1)) * 1.12;
 }
 
 void Multiply(float *matrixA, float *matrixB, float *matrixC, int size)
@@ -70,7 +71,7 @@ void Multiply(float *matrixA, float *matrixB, float *matrixC, int size)
 		{
 			result = 0.0;
 			for (k = 0; k < size; k++)
-				result += *(matrixA + (i * size) + k) * *(matrixB + (k * size) + j);
-			*(matrixC + (i * size) + j) = result;
+				result += matrixA[(i * size) + k] * matrixB[(k * size) + j];
+			matrixC[(i * size) + j] = result;
 		}
 }

@@ -6,9 +6,9 @@
 ! 
 ! Output:
 ! 
-! Compile: mpif90 -o matmult-mpi-f90.o matmult-mpi.f90
+! Compile: mpif90_intel -o matmult-mpi-f90.o matmult-mpi.f90
 ! 
-! Run: mpiexec -np 10 ./matmult-mpi-f90.o
+! Run: mpiexec_intel -np 10 ./matmult-mpi-f90.o
 ! 
 ! Algorithm:
 ! 
