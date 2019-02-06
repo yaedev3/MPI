@@ -45,10 +45,10 @@ program matmult
     call FillMatrix(matrixA, size)
     call FillMatrix(matrixB, size)
 
+    call Multiply(MatrixA, MatrixB, MatrixC, size)
+
     call PrintMatrix(matrixA, size)
     call PrintMatrix(matrixB, size)
-
-    call Multiply(MatrixA, MatrixB, MatrixC, size)
     call PrintMatrix(matrixC, size)
 
 end program matmult
