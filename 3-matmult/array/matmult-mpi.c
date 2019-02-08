@@ -20,22 +20,29 @@
 #include <stdlib.h>
 #include "mpi.h"
 
-void FillMatrix(float *array, int size);
-void PrintMatrix(float *array, int row, int column, char name[]);
+void PrintMatrix(float *matrix, int row, int column, char name[]);
+void FillMatrix(float *matrix, int size);
 void Multiply(float *matrixA, float *matrixB, float *matrixC, int sizeX, int sizeY);
 
 int main(int argc, char *argv[])
 {
-    int rank, proccess, size = 5;
-    int i, waste, n, processSize;
-    float matrixA[size * size], matrixB[size * size], matrixC[size * size];
+    int rank;                   //
+    int proccess;               //
+    int size = 5;               //
+    int i;                      //
+    int waste;                  //
+    int n;                      //
+    int processSize;            //
+    float matrixA[size * size]; //
+    float matrixB[size * size]; //
+    float matrixC[size * size]; //
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &proccess);
 
     waste = size % (proccess - 1);
-    n = (size - waste) / (proccess - 1);
+    n = size / (proccess - 1);
 
     if (rank == 0)
     {
@@ -57,9 +64,9 @@ int main(int argc, char *argv[])
             MPI_Recv(matrixC + ((i - 1) * size * n), processSize * size, MPI_FLOAT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
 
-        PrintMatrix(matrixA, size, size, "matrixA");
-        PrintMatrix(matrixB, size, size, "matrixB");
-        PrintMatrix(matrixC, size, size, "matrixC");
+        PrintMatrix(matrixA, size, size, "Matrix A");
+        PrintMatrix(matrixB, size, size, "Matrix B");
+        PrintMatrix(matrixC, size, size, "Matrix C (result)");
     }
     else
     {
@@ -76,52 +83,36 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-/**
-* Llena una matriz cuadrada con valores aleatorios.
-* array - Matriz cuadrada.
-* size - Tamaño de la matriz.
-*/
-void FillMatrix(float *array, int size)
+void PrintMatrix(float *matrix, int row, int column, char name[])
 {
-    int i, j;
-
-    for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++)
-            *(array + (i * size) + j) = rand() % (11 * (i + 1)) * 1.12;
-}
-
-/**
-* Imprime una matriz con un mensaje y un identificador.
-* array - Matriz.
-* row - Numero de renglones de la matriz.
-* column - Numero de columnas de la matriz.
-* name - Mensaje para imprimir.
-* id - Identificador del proceso.
-*/
-void PrintMatrix(float *array, int row, int column, char name[])
-{
-    int i, j;
+    int i;
+    int j;
 
     printf("%s\n", name);
 
     for (i = 0; i < row; i++)
     {
         for (j = 0; j < column; j++)
-            printf("%.2f\t", *(array + (i * column) + j));
+            printf("%.2f\t", matrix[(i * column) + j]);
         printf("\n");
     }
 }
 
-/**
-* Multiplica dos matrices cuadradas A, B y almacena el resultado en una tercera matriz C.
-* matrixA - Primera matriz cuadrada.
-* matrixB - Segunda matriz cuadrada.
-* matrixC - Matriz resultado.
-* size - Tamaño de las matrices.
-*/
+void FillMatrix(float *matrix, int size)
+{
+    int i;
+    int j;
+
+    for (i = 0; i < size; i++)
+        for (j = 0; j < size; j++)
+            matrix[(i * size) + j] = rand() % (11 * (i + 1)) * 1.12;
+}
+
 void Multiply(float *matrixA, float *matrixB, float *matrixC, int sizeX, int sizeY)
 {
-    int i, j, k;
+    int i;
+    int j;
+    int k;
     float result;
 
     for (i = 0; i < sizeX; i++)
@@ -129,7 +120,7 @@ void Multiply(float *matrixA, float *matrixB, float *matrixC, int sizeX, int siz
         {
             result = 0.0;
             for (k = 0; k < sizeY; k++)
-                result += *(matrixA + (i * sizeY) + k) * *(matrixB + (k * sizeY) + j);
-            *(matrixC + (i * sizeY) + j) = result;
+                result += matrixA[(i * sizeY) + k] * matrixB[(k * sizeY) + j];
+            matrixC[(i * sizeY) + j] = result;
         }
 }

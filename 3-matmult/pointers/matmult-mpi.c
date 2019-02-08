@@ -78,9 +78,9 @@ int main(int argc, char *argv[])
             MPI_Recv(matrixC + ((i - 1) * size * n), processSize * size, MPI_FLOAT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
 
-        PrintMatrix(matrixA, size, size, "matrixA");
-        PrintMatrix(matrixB, size, size, "matrixB");
-        PrintMatrix(matrixC, size, size, "matrixC");
+        PrintMatrix(matrixA, size, size, "Matrix A");
+        PrintMatrix(matrixB, size, size, "Matrix B");
+        PrintMatrix(matrixC, size, size, "Matrix C (result)");
     }
     else
     {

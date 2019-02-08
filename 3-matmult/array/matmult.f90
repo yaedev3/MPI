@@ -18,13 +18,14 @@ program matmult
     implicit none
     
     INTERFACE 
-        subroutine PrintMatrix(array, size)
-            REAL, INTENT(IN) :: array(:)
+        subroutine PrintMatrix(matrix, size, name)
+            REAL, INTENT(IN) :: matrix(:)
             INTEGER, INTENT(IN) :: size
+            CHARACTER(len=*), INTENT(IN) :: name
         end subroutine PrintMatrix
 
-        subroutine FillMatrix(array, size)
-            REAL, INTENT(OUT) :: array(:)
+        subroutine FillMatrix(matrix, size)
+            REAL, INTENT(OUT) :: matrix(:)
             INTEGER, INTENT(IN) :: size
         end subroutine FillMatrix
 
@@ -42,42 +43,44 @@ program matmult
     REAL, DIMENSION(size * size) :: matrixB
     REAL, DIMENSION(size * size) :: matrixC
 
-    call FillMatrix(matrixA, size)
-    call FillMatrix(matrixB, size)
+    !call FillMatrix(matrixA, size)
+    !call FillMatrix(matrixB, size)
 
-    call Multiply(MatrixA, MatrixB, MatrixC, size)
+    !call Multiply(MatrixA, MatrixB, MatrixC, size)
 
-    call PrintMatrix(matrixA, size)
-    call PrintMatrix(matrixB, size)
-    call PrintMatrix(matrixC, size)
+    call PrintMatrix(matrixA, size, 'Matrix A')
+    call PrintMatrix(matrixB, size, 'Matrix B')
+    call PrintMatrix(matrixC, size, 'Matrix C (result)')
 
 end program matmult
 
-subroutine PrintMatrix(array, size)
+subroutine PrintMatrix(matrix, size, name)
     IMPLICIT NONE
-    REAL, INTENT(IN) :: array(:)
+    REAL, INTENT(IN) :: matrix(:)
     INTEGER, INTENT(IN) :: size
+    CHARACTER(len=*), INTENT(IN) :: name
     INTEGER :: i
     INTEGER :: j
 
-    do i = 0, size - 1, 1
-        do j = 0, size - 1, 1
-            write (*,*) i, j, array(i * size + j) 
+    write(*, *) name
+    do i = 1, size, 1
+        do j = 1, size, 1
+            write (*,*) i, j, matrix(i * size + j) 
         end do
     end do
 
 end subroutine PrintMatrix
 
-subroutine FillMatrix(array, size)
+subroutine FillMatrix(matrix, size)
     IMPLICIT NONE
-    REAL, INTENT(OUT) :: array(:)
+    REAL, INTENT(OUT) :: matrix(:)
     INTEGER, INTENT(IN) :: size
     INTEGER :: i
     INTEGER :: j
 
-    do i = 0, size - 1, 1
-        do j = 0, size - 1, 1
-            array(i * size + j)  = rand(i)
+    do i = 1, size, 1
+        do j = 1, size, 1
+            matrix(i * size + j)  = rand(i)
         end do
     end do
 
@@ -94,10 +97,10 @@ subroutine Multiply(MatrixA, MatrixB, MatrixC, size)
     INTEGER :: k
     REAL :: result
 
-    do i = 0, size - 1, 1
-        do j = 0, size - 1, 1
-            result = 0
-            do k = 0, size - 1, 1
+    do i = 1, size, 1
+        do j = 1, size, 1
+            result = 0.0
+            do k = 1, size, 1
                 result = result + matrixA(i * size + k) * matrixB(k * size + j)
             end do
             matrixC(i * size + j) = result

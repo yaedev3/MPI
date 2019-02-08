@@ -26,7 +26,9 @@ void Multiply(float *matrixA, float *matrixB, float *matrixC, int size);
 void main()
 {
     int size;
-    float *matrixA, *matrixB, *matrixC;
+    float *matrixA;
+    float *matrixB;
+    float *matrixC;
 
     size = 5;
     matrixA = (float *)malloc(sizeof(float) * size * size);
@@ -38,9 +40,9 @@ void main()
 
     Multiply(matrixA, matrixB, matrixC, size);
 
-	PrintMatrix(matrixA, size, "Matrix A");
-	PrintMatrix(matrixB, size, "Matrix B");
-	PrintMatrix(matrixC, size, "Matrix C (result)");
+    PrintMatrix(matrixA, size, "Matrix A");
+    PrintMatrix(matrixB, size, "Matrix B");
+    PrintMatrix(matrixC, size, "Matrix C (result)");
 
     free(matrixA);
     free(matrixB);
@@ -49,7 +51,8 @@ void main()
 
 void PrintMatrix(float *matrix, int size, char name[])
 {
-    int i, j;
+    int i;
+    int j;
 
     printf("%s\n", name);
 
@@ -63,7 +66,8 @@ void PrintMatrix(float *matrix, int size, char name[])
 
 void FillMatrix(float *matrix, int size)
 {
-    int i, j;
+    int i;
+    int j;
 
     for (i = 0; i < size; i++)
         for (j = 0; j < size; j++)
@@ -72,7 +76,9 @@ void FillMatrix(float *matrix, int size)
 
 void Multiply(float *matrixA, float *matrixB, float *matrixC, int size)
 {
-    int i, j, k;
+    int i;
+    int j;
+    int k;
     float result;
 
     for (i = 0; i < size; i++)

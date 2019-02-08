@@ -26,7 +26,9 @@ void Multiply(float *matrixA, float *matrixB, float *matrixC, int size);
 void main()
 {
 	int size = 5;
-	float matrixA[size * size], matrixB[size * size], matrixC[size * size];
+	float matrixA[size * size];
+	float matrixB[size * size];
+	float matrixC[size * size];
 
 	FillMatrix(matrixA, size);
 	FillMatrix(matrixB, size);
@@ -40,7 +42,8 @@ void main()
 
 void PrintMatrix(float *matrix, int size, char name[])
 {
-	int i, j;
+	int i;
+	int j;
 
 	printf("%s\n", name);
 
@@ -54,7 +57,8 @@ void PrintMatrix(float *matrix, int size, char name[])
 
 void FillMatrix(float *matrix, int size)
 {
-	int i, j;
+	int i;
+	int j;
 
 	for (i = 0; i < size; i++)
 		for (j = 0; j < size; j++)
@@ -63,7 +67,9 @@ void FillMatrix(float *matrix, int size)
 
 void Multiply(float *matrixA, float *matrixB, float *matrixC, int size)
 {
-	int i, j, k;
+	int i;
+	int j;
+	int k;
 	float result;
 
 	for (i = 0; i < size; i++)
