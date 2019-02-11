@@ -19,10 +19,11 @@ program matmult
     include 'mpif.h'
 
     INTERFACE 
-        subroutine PrintMatrix(array, size)
-            REAL, INTENT(IN) :: array(:)
-            INTEGER, INTENT(IN) :: size
-        end subroutine PrintMatrix
+    subroutine PrintMatrix(matrix, size, name)
+        REAL, INTENT(IN) :: matrix(:)
+        INTEGER, INTENT(IN) :: size
+        CHARACTER(len=*), INTENT(IN) :: name
+    end subroutine PrintMatrix
 
         subroutine FillMatrix(array, size)
             REAL, INTENT(OUT) :: array(:)
@@ -80,12 +81,13 @@ program matmult
                 processSize = waste + n
             end if
 
-            call MPI_RECV(matrixC + ((i - 1) * size * n), processSize * size, MPI_REAL, i, 0, MPI_COMM_WORLD, ierror)
+            call MPI_RECV(matrixC + ((i - 1) * size * n), processSize * size, MPI_REAL, i, 0, MPI_COMM_WORLD, status, ierror)
 
         end do
-        call PrintMatrix(matrixA, size)
-        call PrintMatrix(matrixB, size)
-        call PrintMatrix(matrixC, size)
+
+        call PrintMatrix(matrixA, size, 'Matrix A')
+        call PrintMatrix(matrixB, size, 'Matrix B')
+        call PrintMatrix(matrixC, size, 'Matrix C (result)')
 
     else 
 
@@ -96,7 +98,7 @@ program matmult
         end if
 
         call Multiply(matrixA, matrixB, matrixC, processSize, size)
-        call MPI_SEND(matrixC, processSize * size, MPI_REAL, 0, 0, MPI_COMM_WORLD)
+        call MPI_SEND(matrixC, processSize * size, MPI_REAL, 0, 0, MPI_COMM_WORLD, ierror)
 
     end if
 
@@ -104,29 +106,33 @@ program matmult
 
 end program matmult
 
-subroutine PrintMatrix(array, size)
+subroutine PrintMatrix(matrix, size, name)
     IMPLICIT NONE
-    REAL, INTENT(IN) :: array(:)
+    REAL, INTENT(IN) :: matrix(:)
     INTEGER, INTENT(IN) :: size
-    INTEGER :: i, j
+    CHARACTER(len=*), INTENT(IN) :: name
+    INTEGER :: i
+    INTEGER :: j
 
-    do i = 0, size - 1, 1
-        do j = 0, size - 1, 1
-            write (*,*) i, j, array(i * size + j) 
+    write(*, *) name
+    do i = 1, size, 1
+        do j = 1, size, 1
+            write (*,*) i, j, matrix((i - 1) * size + j) 
         end do
     end do
 
 end subroutine PrintMatrix
 
-subroutine FillMatrix(array, size)
+subroutine FillMatrix(matrix, size)
     IMPLICIT NONE
-    REAL, INTENT(OUT) :: array(:)
+    REAL, INTENT(OUT) :: matrix(:)
     INTEGER, INTENT(IN) :: size
-    INTEGER :: i, j
+    INTEGER :: i
+    INTEGER :: j
 
-    do i = 0, size - 1, 1
-        do j = 0, size - 1, 1
-            array(i * size + j)  = rand(i)
+    do i = 1, size, 1
+        do j = 1, size, 1
+            matrix((i - 1) * size + j)  = rand(i)
         end do
     end do
 
@@ -139,7 +145,9 @@ subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
     REAL, INTENT(OUT) :: MatrixC(:)
     INTEGER, INTENT(IN) :: sizeX
     INTEGER, INTENT(IN) :: sizeY
-    INTEGER :: i, j, k
+    INTEGER :: i
+    INTEGER :: j
+    INTEGER :: k
     REAL :: result
 
     do i = 0, sizeX - 1, 1
@@ -147,9 +155,9 @@ subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
 
             result = 0.0
             do k = 0, sizeY - 1, 1
-                result = result + matrixA(i * sizeY + k) * matrixB(k * sizeY + j)
+                result = result + matrixA((i - 1) * sizeY + k) * matrixB((k - 1) * sizeY + j)
             end do
-            matrixC(i * sizeY + j) = result
+            matrixC((i - 1) * sizeY + j) = result
         
         end do
     end do

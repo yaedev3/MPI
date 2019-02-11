@@ -1,32 +1,35 @@
 #!/bin/sh
 
-case "$1" in
+if [ ! -d out ]; then
+    echo "Creating out directory"
+    mkdir out
+fi
 
-"serial-c")  
-    echo "C serial program"
-    gcc -o matmult-c.o matmult.c
-    ./matmult-c.o
+case "$1" in
+    
+    "-c")
+        gcc -o out/matmult-c.o matmult.c
+        ./out/matmult-c.o
     ;;
-"serial-fortran")  
-    echo "FORTRAN serial program"
-    gfortran -o matmult-f90.o matmult.f90
-    ./matmult-f90.o
+    "-f")
+        gfortran -o out/matmult-f90.o matmult.f90
+        ./out/matmult-f90.o
     ;;
-"mpi-c")  
-    echo "MPI C program $2 threads"
-    mpicc -o matmult-mpi-c.o matmult-mpi.c
-    mpiexec -np $2 ./matmult-mpi-c.o
+    "-mc")
+        echo "MPI C program $2 threads"
+        mpicc -o out/matmult-mpi-c.o matmult-mpi.c
+        mpiexec -np $2 ./out/matmult-mpi-c.o
     ;;
-"mpi-fortran") 
-    echo "MPI FORTRAN program $2 threads"
-    mpif90 -o matmult-mpi-f90.o matmult-mpi.f90
-    mpiexec -np 10 ./matmult-mpi-f90.o
-   ;;
-*) 
-    echo "Commands:"
-    echo "serial-c : C serial program"
-    echo "serial-fortran : FORTRAN serial program"
-    echo "mpi-c #threads : MPI C program"
-    echo "mpi-fortran #threads: MPI FORTRAN program"
+    "-mf")
+        echo "MPI FORTRAN program $2 threads"
+        mpif90 -o out/matmult-mpi-f90.o matmult-mpi.f90
+        mpiexec -np $2 ./out/matmult-mpi-f90.o
+    ;;
+    *)
+        echo "Commands:"
+        echo "-c for C serial program"
+        echo "-f for FORTRAN serial program"
+        echo "-mc #threads for C MPI program"
+        echo "-mf #threads for FORTRAN MPI program"
     ;;
 esac

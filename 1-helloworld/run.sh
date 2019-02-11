@@ -1,38 +1,40 @@
 #!/bin/sh
 
-case "$1" in
+if [ ! -d out ]; then
+    echo "Creating out directory"
+    mkdir out
+fi
 
-"serial-c")  
-    echo "C serial program"
-    gcc -o helloworld-c.o helloworld.c
-    ./helloworld-c.o
+case "$1" in
+    
+    "-c")
+        gcc -o out/helloworld-c.o helloworld.c
+        ./out/helloworld-c.o
     ;;
-"serial-fortran")  
-    echo "FORTRAN serial program"
-    gfortran -o helloworld-f90.o helloworld.f90
-    ./helloworld-f90.o
+    "-f")
+        ifort -o out/helloworld-f90.o helloworld.f90 || gfortran -o out/helloworld-f90.o helloworld.f90
+        ./out/helloworld-f90.o
     ;;
-"mpi-c")  
-    echo "MPI C program $2 threads"
-    mpicc -o helloworld-mpi-c.o helloworld-mpi.c
-    mpiexec -np $2 ./helloworld-mpi-c.o
+    "-mc")
+        echo "MPI C program $2 threads"
+        mpicc -o out/helloworld-mpi-c.o helloworld-mpi.c
+        mpiexec -np $2 ./out/helloworld-mpi-c.o
     ;;
-"mpi-fortran") 
-    echo "MPI FORTRAN program $2 threads"
-    mpif90 -o helloworld-mpi-f90.o helloworld-mpi.f90
-    mpiexec -np $2 ./helloworld-mpi-f90.o
-   ;;
-"cuda-c") 
-    echo "CUDA C program"
-    nvcc -o helloworld-cuda.o helloworld.c
-    ./helloworld-cuda.o
-   ;;
-*) 
-    echo "Commands:"
-    echo "serial-c : C serial program"
-    echo "serial-fortran : FORTRAN serial program"
-    echo "mpi-c #threads : MPI C program"
-    echo "mpi-fortran #threads: MPI FORTRAN program"
-    echo "cuda-c : CUDA C program"
-   ;;
+    "-mf")
+        echo "MPI FORTRAN program $2 threads"
+        mpif90_intel -o out/helloworld-mpi-f90.o helloworld-mpi.f90 || mpif90 -o out/helloworld-mpi-f90.o helloworld-mpi.f90
+        mpiexec_intel -np $2 ./out/helloworld-mpi-f90.o || mpiexec -np $2 ./out/helloworld-mpi-f90.o
+    ;;
+    "-cu")
+        nvcc -o out/helloworld-cuda.o helloworld.c
+        ./out/helloworld-cuda.o
+    ;;
+    *)
+        echo "Commands:"
+        echo "-c for C serial program"
+        echo "-f for FORTRAN serial program"
+        echo "-mc #threads for C MPI program"
+        echo "-mf #threads for FORTRAN MPI program"
+        echo "-cu for C CUDA program"
+    ;;
 esac
