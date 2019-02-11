@@ -23,7 +23,7 @@ void main()
     dim_real = 0;
     input_file = "D_lj_red_file.dat";
     file = fopen(input_file, "r");
-    ratio = 9.9999997473787516E-5;
+    ratio = 1.0E-4;
     XVEC = (double *)malloc(sizeof(double) * dim_max);
     YVEC = (double *)malloc(sizeof(double) * dim_max);
 
@@ -43,7 +43,7 @@ void main()
         printf("%.15le %.15le\n", XVEC[dim_real - 1], YVEC[dim_real - 1]);
 
         alpha = Interpolacion(dim_real, XVEC, YVEC, ratio);
-        printf("ratio %.15lfe\n alpha %.15lfe\n", ratio, alpha);
+        printf("ratio %.15le\n alpha %.17le\n", ratio, alpha);
     }
 
     free(XVEC);

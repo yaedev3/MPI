@@ -1,5 +1,5 @@
 MODULE precision
-  INTEGER ,PARAMETER:: long=SELECTED_REAL_KIND(8,307) !8 for real(float), 16 for double
+  INTEGER ,PARAMETER:: long=SELECTED_REAL_KIND(15,307) !(6,37) for real(float), (15,307) for double
 END MODULE precision
 
 MODULE parameters
@@ -20,9 +20,9 @@ PROGRAM MAIN
   REAL(long) :: ratio, alpha 
   
   input_file = 'D_lj_red_file.dat' 
-  ratio = 1.0E-4 ! larger than 1.3E-7
-  
+  ratio = 1.0E-4_long ! larger than 1.3E-7
   dim_real = 0
+
   OPEN(UNIT=1,file=input_file,ACTION="READ",STATUS='OLD')
   DO j=1,dim_max
      READ(1,*,END=10) XVEC(j),YVEC(j)

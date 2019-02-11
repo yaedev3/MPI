@@ -29,21 +29,25 @@
 #include <mpi.h>
 
 /* Calculate local integral  */
-double Trap(double left_endpt, double right_endpt, int trap_count,
-            double base_len);
+double Trap(double left_endpt, double right_endpt, int trap_count, double base_len);
 
-/* Function we're integrating */
-double f(double x);
-
-int main(void)
+int main(int argc, char *argv[])
 {
-   int my_rank, comm_sz, n = 1024, local_n;
-   double a = 0.0, b = 14.0, h, local_a, local_b;
-   double local_int, total_int;
+   int my_rank;
+   int comm_sz;
+   int n;
+   int local_n;
    int source;
+   double a;
+   double b;
+   double h;
+   double local_a;
+   double local_b;
+   double local_int;
+   double total_int;
 
    /* Let the system do what it needs to start up MPI */
-   MPI_Init(NULL, NULL);
+   MPI_Init(&argc, &argv);
 
    /* Get my process rank */
    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -51,6 +55,9 @@ int main(void)
    /* Find out how many processes are being used */
    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
+   n = 1024;
+   a = 0.0;
+   b = 14.0;
    h = (b - a) / n;       /* h is the same for all processes */
    local_n = n / comm_sz; /* So is the number of trapezoids  */
 
@@ -62,28 +69,26 @@ int main(void)
    local_int = Trap(local_a, local_b, local_n, h);
 
    /* Add up the integrals calculated by each process */
-   if (my_rank != 0)
-   {
-      MPI_Send(&local_int, 1, MPI_DOUBLE, 0, 0,
-               MPI_COMM_WORLD);
-   }
-   else
+
+   if (my_rank == 0)
    {
       total_int = local_int;
       for (source = 1; source < comm_sz; source++)
       {
-         MPI_Recv(&local_int, 1, MPI_DOUBLE, source, 0,
-                  MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+         MPI_Recv(&local_int, 1, MPI_DOUBLE, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
          total_int += local_int;
       }
+   }
+   else
+   {
+      MPI_Send(&local_int, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
    }
 
    /* Print the result */
    if (my_rank == 0)
    {
       printf("With n = %d trapezoids, our estimate\n", n);
-      printf("of the integral from %f to %f = %.15e\n",
-             a, b, total_int);
+      printf("of the integral from %f to %f = %.15e\n", a, b, total_int);
    }
 
    /* Shut down MPI */
@@ -104,32 +109,19 @@ int main(void)
  *               left_endpt to right_endpt using trap_count
  *               trapezoids
  */
-double Trap(
-    double left_endpt /* in */,
-    double right_endpt /* in */,
-    int trap_count /* in */,
-    double base_len /* in */)
+double Trap(double left_endpt, double right_endpt, int trap_count, double base_len)
 {
-   double estimate, x;
+   double estimate;
+   double x;
    int i;
 
-   estimate = (f(left_endpt) + f(right_endpt)) / 2.0;
+   estimate = (left_endpt * left_endpt + right_endpt * right_endpt) / 2.0;
    for (i = 1; i <= trap_count - 1; i++)
    {
       x = left_endpt + i * base_len;
-      estimate += f(x);
+      estimate += (x * x);
    }
    estimate = estimate * base_len;
 
    return estimate;
 } /*  Trap  */
-
-/*------------------------------------------------------------------
- * Function:    f
- * Purpose:     Compute value of function to be integrated
- * Input args:  x
- */
-double f(double x)
-{
-   return x * x;
-} /* f */

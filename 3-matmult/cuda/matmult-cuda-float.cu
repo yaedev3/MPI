@@ -59,7 +59,7 @@ int main()
     int numBlock;       // Numero de bloques necesario para procesar los datos 
 
     //Asignacion de variables
-    N = 5;
+    N = 2500;
     size = N * sizeof(float) * N;
 
     //En la memoria del equipo 
@@ -84,10 +84,8 @@ int main()
 	for(i = 0;i < N;i++) //Renglon 
 		for(j = 0;j < N;j++) // Columna 
 		{
-			h_A[i + i * j] = rand()%(i + 1);
-			h_B[i + i * j] = rand()%(i + 1);
-			//h_A[j + i * N] = j + i * N + 1;
-			//h_B[j + i * N] = j + i * N + 1;
+			h_A[j + i * N] = rand() % (11 * (i + 1)) * 1.12;
+			h_B[j + i * N] = rand() % (11 * (i + 1)) * 1.12;
 		}
 
 	//Copia los arreglos de memoria del CPU a memoria de la GPU 
@@ -97,10 +95,9 @@ int main()
 	// Invoke kernel
 	VecAdd<<<numBlock, NumHilos >>>(d_A, d_B, d_C, N);
 
-    
     //Copea el resultado de la multiplicacion de memoria de la GPU a memoria de la CPU
 	cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
-	
+/*	
 	//Imprime la matriz A
 	printf("Matriz A\n");
 	for(i = 0;i < N;i++)
@@ -126,7 +123,7 @@ int main()
 		for(j = 0;j < N;j++)
 			printf("%.2f ", h_C[j + i * N]);
 		printf("\n");
-	}
+	}*/
 
 	//Libera la memoria utilizada.
 	// Free device memory

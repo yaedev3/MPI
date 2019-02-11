@@ -2,21 +2,24 @@
 
 /* Calculate local integral  */
 double Trap(double left_endpt, double right_endpt, int trap_count, double base_len);
-/* Function we're integrating */
-double f(double x);
 
 void main()
 {
     /* Declaration */
     int n;
-    double a, b, h, local_int, local_a, local_b;
+    double a;
+    double b;
+    double h;
+    double local_int;
+    double local_a;
+    double local_b;
 
     /* Assignment */
     n = 1024;
     a = 0.0;
     b = 14.0;
-    h = (b - a) / n; 
-    
+    h = (b - a) / n;
+
     local_a = a + h;
     local_b = local_a + h;
     local_int = Trap(local_a, local_b, n, h);
@@ -39,26 +42,17 @@ void main()
  */
 double Trap(double left_endpt, double right_endpt, int trap_count, double base_len)
 {
-    double estimate, x;
+    double estimate;
+    double x;
     int i;
 
-    estimate = (f(left_endpt) + f(right_endpt)) / 2.0;
+    estimate = (left_endpt * left_endpt + right_endpt * right_endpt) / 2.0;
     for (i = 1; i <= trap_count - 1; i++)
     {
         x = left_endpt + i * base_len;
-        estimate += f(x);
+        estimate += (x * x);
     }
     estimate = estimate * base_len;
 
     return estimate;
 } /*  Trap  */
-
-/*------------------------------------------------------------------
- * Function:    f
- * Purpose:     Compute value of function to be integrated
- * Input args:  x
- */
-double f(double x)
-{
-    return x * x;
-} /* f */

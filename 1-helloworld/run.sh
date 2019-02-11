@@ -26,7 +26,7 @@ case "$1" in
         mpiexec_intel -np $2 ./out/helloworld-mpi-f90.o || mpiexec -np $2 ./out/helloworld-mpi-f90.o
     ;;
     "-cu")
-        nvcc -o out/helloworld-cuda.o helloworld.c
+        nvcc -o out/helloworld-cuda.o helloworld.cu
         ./out/helloworld-cuda.o
     ;;
     *)
