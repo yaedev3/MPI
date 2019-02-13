@@ -38,10 +38,16 @@ program matmult
 
     END INTERFACE
 
-    INTEGER, PARAMETER :: size = 2
-    REAL, DIMENSION(size * size) :: matrixA
-    REAL, DIMENSION(size * size) :: matrixB
-    REAL, DIMENSION(size * size) :: matrixC
+    INTEGER :: size
+    REAL, POINTER, DIMENSION(:) :: matrixA
+    REAL, POINTER, DIMENSION(:) :: matrixB
+    REAL, POINTER, DIMENSION(:) :: matrixC
+
+    size = 5
+
+    allocate(matrixA(size * size))
+    allocate(matrixB(size * size))
+    allocate(matrixC(size * size))
 
     call FillMatrix(matrixA, size)
     call FillMatrix(matrixB, size)
@@ -51,6 +57,10 @@ program matmult
     call PrintMatrix(matrixA, size, 'Matrix A')
     call PrintMatrix(matrixB, size, 'Matrix B')
     call PrintMatrix(matrixC, size, 'Matrix C (result)')
+
+    deallocate(matrixA)
+    deallocate(matrixB)
+    deallocate(matrixC)
 
 end program matmult
 
@@ -80,7 +90,7 @@ subroutine FillMatrix(matrix, size)
 
     do i = 1, size, 1
         do j = 1, size, 1
-            matrix((i - 1) * size + j)  = rand(i)
+            matrix((i - 1) * size + j)  = rand()
         end do
     end do
 

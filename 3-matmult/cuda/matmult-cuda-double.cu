@@ -95,7 +95,7 @@ int main()
 	// Invoke kernel
 	VecAdd<<<numBlock, NumHilos >>>(d_A, d_B, d_C, N);
 	
-	//Copea el resultado de la multiplicacion de memoria de la GPU a memoria de la CPU
+	//Copia el resultado de la multiplicacion de memoria de la GPU a memoria de la CPU
 	cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
 /*	 
 	//Imprime la matriz A

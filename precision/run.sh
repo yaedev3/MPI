@@ -12,7 +12,7 @@ case "$1" in
         ./out/precision-c.o
     ;;
     "-f")
-        gfortran -o out/precision-f90.o precision.f90
+        ifort -o out/precision-f90.o precision.f90 || gfortran -o out/precision-f90.o precision.f90
         ./out/precision-f90.o
     ;;
     "-mc")
