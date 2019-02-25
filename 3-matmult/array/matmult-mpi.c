@@ -79,6 +79,10 @@ int main(int argc, char *argv[])
         MPI_Send(matrixC, processSize * size, MPI_FLOAT, 0, 0, MPI_COMM_WORLD);
     }
 
+    free(matrixA);
+    free(matrixB);
+    free(matrixC);
+
     MPI_Finalize();
     return 0;
 }

@@ -16,7 +16,6 @@
  * 
  * */
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include "mpi.h"
 
@@ -49,7 +48,6 @@ int main(int argc, char *argv[])
     if (rank == 0)
     {
         matrixA = (float *)malloc(sizeof(float) * size * size);
-
         matrixC = (float *)malloc(sizeof(float) * size * size);
         FillMatrix(matrixA, size);
         FillMatrix(matrixB, size);
@@ -96,6 +94,10 @@ int main(int argc, char *argv[])
         Multiply(matrixA, matrixB, matrixC, processSize, size);
         MPI_Send(matrixC, processSize * size, MPI_FLOAT, 0, 0, MPI_COMM_WORLD);
     }
+
+    free(matrixA);
+    free(matrixB);
+    free(matrixC);
 
     MPI_Finalize();
     return 0;

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
+#include <math.h>
 
 static double a = 1.0E-10;
 
@@ -39,7 +40,7 @@ __global__ void AddMatrix(double* C, int N, double* result)
 	if(index < N * N)
 	{
 		ix = index / N;
-		iy = index % N;
+        iy = index % N;
         *result += C[iy + N * ix];
 	}
 }
@@ -61,13 +62,26 @@ int main(int argc, char *argv[])
     int Tam;                // Numero de datos que se manejan
 	int threads;            // Hilos por bloque 
     int blocks;             // Numero de bloques necesario para procesar los datos 
+    double estimation;
+    double error;
 
-    //printf("%d %d\n", argv[0], argc);
+    // Verifica si tiene los argumentos necesarios para inicializa el tamaño de las matrices
+    if (argc < 2)
+    {
+        printf("Falta el argumento del tamaño\n");
+        return -1;
+    }
 
-    //Asignacion de variables
-	N = 5;
+    // Asigna el valor del primer argumento a la variable de tamaño
+    sscanf(argv[1], "%d", &N);
+
+    // Establece el tamaño total de la matriz en memoria
     size = N * sizeof(double) * N;
+
+    // Establecec el tamaño del tipo de dato double
     sizeDouble = sizeof(double);
+    
+    // Asigna el numero de hilos y calcula el numero de bloques
     Tam = N * N;
 	threads = 1024;
     blocks = Tam / threads;
@@ -94,22 +108,30 @@ int main(int argc, char *argv[])
 	cudaMemcpy(d_matrixA, h_matrixA, size, cudaMemcpyHostToDevice);
     cudaMemcpy(d_matrixB, h_matrixB, size, cudaMemcpyHostToDevice);
 
-    // Inicializa la variable d_result con 0.0 y lo copia a la memoria de la GPU
-    h_result[0] = 0.0;
-    cudaMemcpy(d_result, h_result, sizeDouble, cudaMemcpyHostToDevice);
-
     // Mandar llamar la multiplicacion de matrices.
     Multiply<<<blocks, threads >>>(d_matrixA, d_matrixB, d_matrixC, N);
+
+    // Inicializa la variable d_result con 0.0 y lo copia a la memoria de la GPU
+    *h_result = 0.0;
+    cudaMemcpy(d_result, h_result, sizeDouble, cudaMemcpyHostToDevice);
+
+    // Suma los valores de la multiplicacion de matrices
     AddMatrix<<<blocks, threads>>>(d_matrixC, N, d_result);
 
     //Copia el resultado de la suma de los elementos de la matriz en la memoria
 	cudaMemcpy(h_result, d_result, sizeDouble, cudaMemcpyDeviceToHost);
 
-    //Imprime resultado estimado
-    printf("result calc: %.15le\n", N * N * N * a * a);
-    
+    // Calculo estimado con la formula a^2*N^3.
+    estimation = pow(N, 3) * pow(a, 2);
+
     //Imprime resultado real
     printf("result: %.15le\n", h_result);
+
+    // Calcula el % de error.
+    error = fabs(*h_result - estimation) / estimation * 100.0;
+    
+    // Imprime el % de error.
+    printf("Error %.15le N = %d\n", error, N);
 
 	// Libera espacio del equipo
 	cudaFree(d_matrixA);

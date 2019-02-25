@@ -40,7 +40,7 @@ program matmult
 
     END INTERFACE
 
-    INTEGER, PARAMETER :: size = 3
+    INTEGER, PARAMETER :: size
     REAL, DIMENSION(size * size) :: matrixA
     REAL, DIMENSION(size * size) :: matrixB
     REAL, DIMENSION(size * size) :: matrixC
@@ -57,6 +57,7 @@ program matmult
     call MPI_COMM_SIZE(MPI_COMM_WORLD, process, ierror)
     call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 
+    size = 3
     waste = mod(size, process - 1)
     n = size / (process - 1)
 
@@ -69,7 +70,6 @@ program matmult
 
     call MPI_BCAST(matrixA, size * size, MPI_REAL, 0, MPI_COMM_WORLD, ierror)
     call MPI_BCAST(matrixB, size * size, MPI_REAL, 0, MPI_COMM_WORLD, ierror)
-    write (*, *) process, rank, n
 
     if (rank == 0) then
         

@@ -8,17 +8,17 @@ fi
 case "$1" in
     
     "-c")
-        gcc -o out/precision-c.o precision.c
-        ./out/precision-c.o
+        gcc -o out/precision-c.o precision.c -lm
+        time ./out/precision-c.o $2
     ;;
     "-f")
         ifort -o out/precision-f90.o precision.f90 || gfortran -o out/precision-f90.o precision.f90
-        ./out/precision-f90.o
+        time ./out/precision-f90.o
     ;;
     "-mc")
         echo "MPI C program $2 threads"
-        mpicc -o out/precision-mpi-c.o precision-mpi.c
-        mpiexec -np $2 ./out/precision-mpi-c.o
+        mpicc -o out/precision-mpi-c.o precision-mpi.c -lm
+        time mpiexec -np $2 ./out/precision-mpi-c.o $3
     ;;
     "-mf")
         echo "MPI FORTRAN program $2 threads"
@@ -27,7 +27,7 @@ case "$1" in
     ;;
     "-cu")
         nvcc -o out/precision-cuda.o precision.cu
-        ./out/precision-cuda.o
+        time ./out/precision-cuda.o $2
     ;;
     *)
         echo "Commands:"

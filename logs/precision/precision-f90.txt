@@ -1,0 +1,42 @@
+Script started on jue 21 feb 2019 15:16:14 CST
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ ./run.sh -f
+ result   0.000000000000000E+000 N =            8
+0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2892maxresident)k
+0inputs+0outputs (0major+164minor)pagefaults 0swaps
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ ./run.sh -f
+ result  -2.858802261199803E-013 N =           64
+0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2928maxresident)k
+0inputs+0outputs (0major+188minor)pagefaults 0swaps
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ ./run.sh -f
+ result  -7.252329946833184E-012 N =          512
+0.18user 0.00system 0:00.18elapsed 98%CPU (0avgtext+0avgdata 8368maxresident)k
+0inputs+0outputs (0major+1707minor)pagefaults 0swaps
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ ./run.sh -f
+ result                 Infinity N =         4096
+813.56user 0.14system 13:33.67elapsed 100%CPU (0avgtext+0avgdata 395344maxresident)k
+0inputs+0outputs (0major+98472minor)pagefaults 0swaps
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ ./run.sh -f
+ result   0.000000000000000E+000 N =            8
+0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2904maxresident)k
+0inputs+0outputs (0major+164minor)pagefaults 0swaps
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ ./run.sh -f
+ result   2.858802261199803E-013 N =           64
+0.00user 0.00system 0:00.00elapsed ?%CPU (0avgtext+0avgdata 2916maxresident)k
+0inputs+0outputs (0major+188minor)pagefaults 0swaps
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ ./run.sh -f
+ result   7.252329946833184E-012 N =          512
+0.18user 0.00system 0:00.18elapsed 98%CPU (0avgtext+0avgdata 8344maxresident)k
+0inputs+0outputs (0major+1704minor)pagefaults 0swaps
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ ./run.sh -f
+ result                 Infinity N =         4096
+815.21user 0.14system 13:35.32elapsed 100%CPU (0avgtext+0avgdata 396016maxresident)k
+0inputs+0outputs (0major+98474minor)pagefaults 0swaps
+]0;gerardoe@bilbo: ~/pruebas/precisiongerardoe@bilbo:~/pruebas/precision$ exit
+exit
+
+Script done on jue 21 feb 2019 15:48:48 CST
+
+ result   1.208942337278325E-009 N =         4096
+842.34user 0.18system 14:02.48elapsed 100%CPU (0avgtext+0avgdata 395340maxresident)k
+0inputs+0outputs (0major+98471minor)pagefaults 0swaps
+
