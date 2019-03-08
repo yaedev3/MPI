@@ -15,8 +15,23 @@
 
 # End of https://www.gitignore.io/api/visualstudiocode
 
+# Script to copy something to server
 copy.sh
+
+# Folder out
 out*
 */out
 */*/out
 */*/*/out
+
+# Files out
+*.o
+*/*.o
+*/*/*.o
+*/*/*/*.o
+
+# Files mod
+*.mod
+*/*.mod
+*/*/*.mod
+*/*/*/*.mod
