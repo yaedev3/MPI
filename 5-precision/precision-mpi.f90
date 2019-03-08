@@ -46,6 +46,8 @@ program matmult
     REAL(long), POINTER, DIMENSION(:) :: matrixC
     REAL(long) :: result
     REAL(long) :: result_local
+    REAL(long) :: estimation
+    REAL(long) :: error
     INTEGER :: rank 
     INTEGER :: process
     INTEGER :: processSize
@@ -67,7 +69,7 @@ program matmult
     waste = mod(N, process - 1)
 
     ! Calcula el numero de datos que va a tomar cada proceso
-    n = N / (process - 1)
+    n_local = N / (process - 1)
 
     ! Inicializa la matriz B para todos los procesos
     allocate(matrixB(N * N))
@@ -88,7 +90,6 @@ program matmult
     ! Comparte la informacion de la matriz B con los demas procesos.
     call MPI_BCAST(matrixB, N * N, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror)
 
-
     if (rank == 0) then
         
         ! Envia partes de la matriz A a todos los demas procesos
@@ -96,26 +97,29 @@ program matmult
         do i = 1, process - 1, 1
 
             if (i == process - 1) then
-                processSize = waste + n
+                processSize = waste + n_local
             end if
 
-            call MPI_SEND(matrixC + ((i - 1) * N * n_local), processSize * N, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, ierror)
+            call MPI_SEND(matrixA((i - 1) * N * n_local + 1), processSize * N, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, ierror)
 
         end do
 
         ! Recibe el resultado de la suma de todos los elementos de la matriz C
-!        do i = 1, process - 1, 1
+        do i = 1, process - 1, 1
 
- !           call MPI_RECV(result_local, 1, MPI_DOUBLE, i, 1, MPI_COMM_WORLD, status, ierror)
-  !          result = result + result_local
+            call MPI_RECV(result_local, 1, MPI_DOUBLE, i, 1, MPI_COMM_WORLD, status, ierror)
+            result = result + result_local
 
-   !     end do
+        end do
 
-        ! Imprime el calculo estimado con la formula a^2*N^3.
-        write(*, *) 'result calc:', N * N * N * a * a
+        ! Calculo estimado con la formula a^2*N^3.
+        estimation = N ** 3_long * a ** 2_long
 
-        ! Imprime el valor dado despues de la suma.
-        write(*, *) 'result:', result
+        ! Calcula el % de error
+        error = DABS(result - estimation) / estimation * 100.0_long;
+
+        ! Imprime el % de error
+        write(*, *) 'result ', error, "N = ", N
 
     else 
         ! Verifica si es el ultimo proceso para calcular el reciduo
@@ -136,10 +140,10 @@ program matmult
         call Multiply(matrixA, matrixB, matrixC, processSize, N)
 
         ! Hace la suma de todos los elementos de la matriz C
-        call AddMatrix(MatrixC, processSize, N, result)
+        call AddMatrix(MatrixC, processSize, N, result_local)
 
         ! Envia el resultado de la multiplicacion al proceso 0.
-!        call MPI_SEND(result_local, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, ierror)
+        call MPI_SEND(result_local, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, ierror)
 
         ! Libera la memoria de la matriz C
         deallocate(matrixC)
@@ -190,7 +194,7 @@ subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
         do j = 1, sizeY, 1
 
             result = 0.0
-            do k = 0, sizeY - 1, 1
+            do k = 1, sizeY, 1
                 result = result + matrixA((i - 1) * sizeY + k) * matrixB((k - 1) * sizeY + j)
             end do
             matrixC((i - 1) * sizeY + j) = result
@@ -214,7 +218,7 @@ subroutine AddMatrix(matrix, Nx, Ny, result)
 
     do i = 1, Nx, 1
         do j = 1, Ny, 1
-            result = result + matrix((i - 1) * Nx + j)
+            result = result + matrix((i - 1) * Nx + j + 1)
         end do
     end do
 

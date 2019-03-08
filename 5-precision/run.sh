@@ -18,7 +18,7 @@ case "$1" in
     "-mc")
         echo "MPI C program $2 threads"
         mpicc -o out/precision-mpi-c.o precision-mpi.c -lm
-        time mpiexec -np $2 ./out/precision-mpi-c.o $3
+         mpiexec -np $2 ./out/precision-mpi-c.o $3
     ;;
     "-mf")
         echo "MPI FORTRAN program $2 threads"

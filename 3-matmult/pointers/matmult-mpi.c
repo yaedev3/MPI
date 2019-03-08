@@ -19,9 +19,9 @@
 #include <stdlib.h>
 #include "mpi.h"
 
-void PrintMatrix(float *matrix, int row, int column, char name[]);
-void FillMatrix(float *matrix, int size);
-void Multiply(float *matrixA, float *matrixB, float *matrixC, int sizeX, int sizeY);
+void PrintMatrix(double *matrix, int N, char name[]);
+void FillMatrix(double *matrix, int size);
+void Multiply(double *matrixA, double *matrixB, double *matrixC, int sizeX, int sizeY);
 
 int main(int argc, char *argv[])
 {
@@ -32,9 +32,9 @@ int main(int argc, char *argv[])
     int waste;       //
     int n;           //
     int processSize; //
-    float *matrixA;  //
-    float *matrixB;  //
-    float *matrixC;  //
+    double *matrixA; //
+    double *matrixB; //
+    double *matrixC; //
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -43,17 +43,17 @@ int main(int argc, char *argv[])
     size = 5;
     waste = size % (proccess - 1);
     n = size / (proccess - 1);
-    matrixB = (float *)malloc(sizeof(float) * size * size);
+    matrixB = (double *)malloc(sizeof(double) * size * size);
 
     if (rank == 0)
     {
-        matrixA = (float *)malloc(sizeof(float) * size * size);
-        matrixC = (float *)malloc(sizeof(float) * size * size);
+        matrixA = (double *)malloc(sizeof(double) * size * size);
+        matrixC = (double *)malloc(sizeof(double) * size * size);
         FillMatrix(matrixA, size);
         FillMatrix(matrixB, size);
     }
 
-    MPI_Bcast(matrixB, size * size, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(matrixB, size * size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (rank == 0)
     {
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         {
             if (i == proccess - 1)
                 processSize = waste + n;
-            MPI_Send(matrixA + ((i - 1) * size * n), processSize * size, MPI_FLOAT, i, 0, MPI_COMM_WORLD);
+            MPI_Send(matrixA + ((i - 1) * size * n), processSize * size, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
         }
 
         processSize = n;
@@ -73,12 +73,12 @@ int main(int argc, char *argv[])
         {
             if (i == proccess - 1)
                 processSize = waste + n;
-            MPI_Recv(matrixC + ((i - 1) * size * n), processSize * size, MPI_FLOAT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(matrixC + ((i - 1) * size * n), processSize * size, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
 
-        PrintMatrix(matrixA, size, size, "Matrix A");
-        PrintMatrix(matrixB, size, size, "Matrix B");
-        PrintMatrix(matrixC, size, size, "Matrix C (result)");
+        PrintMatrix(matrixA, size, "Matrix A");
+        PrintMatrix(matrixB, size, "Matrix B");
+        PrintMatrix(matrixC, size, "Matrix C (result)");
     }
     else
     {
@@ -87,12 +87,12 @@ int main(int argc, char *argv[])
         else
             processSize = n;
 
-        matrixA = (float *)malloc(sizeof(float) * processSize * size);
-        matrixC = (float *)malloc(sizeof(float) * processSize * size);
+        matrixA = (double *)malloc(sizeof(double) * processSize * size);
+        matrixC = (double *)malloc(sizeof(double) * processSize * size);
 
-        MPI_Recv(matrixA, processSize * size, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(matrixA, processSize * size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         Multiply(matrixA, matrixB, matrixC, processSize, size);
-        MPI_Send(matrixC, processSize * size, MPI_FLOAT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(matrixC, processSize * size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     }
 
     free(matrixA);
@@ -103,22 +103,22 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void PrintMatrix(float *matrix, int row, int column, char name[])
+void PrintMatrix(double *matrix, int N, char name[])
 {
     int i;
     int j;
 
     printf("%s\n", name);
 
-    for (i = 0; i < row; i++)
+    for (i = 0; i < N; i++)
     {
-        for (j = 0; j < column; j++)
-            printf("%.2f\t", matrix[(i * column) + j]);
+        for (j = 0; j < N; j++)
+            printf("%.2f\t", matrix[(i * N) + j]);
         printf("\n");
     }
 }
 
-void FillMatrix(float *matrix, int size)
+void FillMatrix(double *matrix, int size)
 {
     int i;
     int j;
@@ -128,12 +128,12 @@ void FillMatrix(float *matrix, int size)
             matrix[(i * size) + j] = rand() % (11 * (i + 1)) * 1.12;
 }
 
-void Multiply(float *matrixA, float *matrixB, float *matrixC, int sizeX, int sizeY)
+void Multiply(double *matrixA, double *matrixB, double *matrixC, int sizeX, int sizeY)
 {
     int i;
     int j;
     int k;
-    float result;
+    double result;
 
     for (i = 0; i < sizeX; i++)
         for (j = 0; j < sizeY; j++)

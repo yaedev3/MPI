@@ -55,9 +55,10 @@ int main(int argc, char *argv[])
    /* Find out how many processes are being used */
    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-   n = 1024;
    a = 0.0;
-   b = 14.0;
+   b = 3.0;
+   n = 1024;
+   
    h = (b - a) / n;       /* h is the same for all processes */
    local_n = n / comm_sz; /* So is the number of trapezoids  */
 
@@ -80,15 +81,13 @@ int main(int argc, char *argv[])
       }
    }
    else
-   {
       MPI_Send(&local_int, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-   }
 
    /* Print the result */
    if (my_rank == 0)
    {
       printf("With n = %d trapezoids, our estimate\n", n);
-      printf("of the integral from %f to %f = %.15e\n", a, b, total_int);
+    printf("of the integral from %f to %f = %.15le\n", a, b, total_int);
    }
 
    /* Shut down MPI */

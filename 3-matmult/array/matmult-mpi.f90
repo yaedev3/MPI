@@ -40,7 +40,7 @@ program matmult
 
     END INTERFACE
 
-    INTEGER, PARAMETER :: size = 3
+    INTEGER, PARAMETER :: size = 5
     REAL, DIMENSION(size * size) :: matrixA
     REAL, DIMENSION(size * size) :: matrixB
     REAL, DIMENSION(size * size) :: matrixC
@@ -69,7 +69,6 @@ program matmult
 
     call MPI_BCAST(matrixA, size * size, MPI_REAL, 0, MPI_COMM_WORLD, ierror)
     call MPI_BCAST(matrixB, size * size, MPI_REAL, 0, MPI_COMM_WORLD, ierror)
-    write (*, *) process, rank, n
 
     if (rank == 0) then
         
@@ -81,7 +80,7 @@ program matmult
                 processSize = waste + n
             end if
 
-            call MPI_RECV(matrixC + ((i - 1) * size * n), processSize * size, MPI_REAL, i, 0, MPI_COMM_WORLD, status, ierror)
+            call MPI_RECV(matrixC((i - 1) * size * n + 1), processSize * size, MPI_REAL, i, 0, MPI_COMM_WORLD, status, ierror)
 
         end do
 
@@ -132,7 +131,7 @@ subroutine FillMatrix(matrix, size)
 
     do i = 1, size, 1
         do j = 1, size, 1
-            matrix((i - 1) * size + j)  = rand(i)
+            matrix((i - 1) * size + j)  = 1
         end do
     end do
 
@@ -154,7 +153,7 @@ subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
         do j = 1, sizeY, 1
 
             result = 0.0
-            do k = 0, sizeY - 1, 1
+            do k = 1, sizeY, 1
                 result = result + matrixA((i - 1) * sizeY + k) * matrixB((k - 1) * sizeY + j)
             end do
             matrixC((i - 1) * sizeY + j) = result

@@ -19,74 +19,74 @@
 #include <string.h>
 #include <stdlib.h>
 
-void PrintMatrix(float *matrix, int size, char name[]);
-void FillMatrix(float *matrix, int size);
-void Multiply(float *matrixA, float *matrixB, float *matrixC, int size);
+void PrintMatrix(double *matrix, int N, char name[]);
+void FillMatrix(double *matrix, int N);
+void Multiply(double *matrixA, double *matrixB, double *matrixC, int N);
 
 void main()
 {
-    int size;
-    float *matrixA;
-    float *matrixB;
-    float *matrixC;
+    int N;
+    double *matrixA;
+    double *matrixB;
+    double *matrixC;
 
-    size = 5;
-    matrixA = (float *)malloc(sizeof(float) * size * size);
-    matrixB = (float *)malloc(sizeof(float) * size * size);
-    matrixC = (float *)malloc(sizeof(float) * size * size);
+    N = 5;
+    matrixA = (double *)malloc(sizeof(double) * N * N);
+    matrixB = (double *)malloc(sizeof(double) * N * N);
+    matrixC = (double *)malloc(sizeof(double) * N * N);
 
-    FillMatrix(matrixA, size);
-    FillMatrix(matrixB, size);
+    FillMatrix(matrixA, N);
+    FillMatrix(matrixB, N);
 
-    Multiply(matrixA, matrixB, matrixC, size);
+    Multiply(matrixA, matrixB, matrixC, N);
 
-    PrintMatrix(matrixA, size, "Matrix A");
-    PrintMatrix(matrixB, size, "Matrix B");
-    PrintMatrix(matrixC, size, "Matrix C (result)");
+    PrintMatrix(matrixA, N, "Matrix A");
+    PrintMatrix(matrixB, N, "Matrix B");
+    PrintMatrix(matrixC, N, "Matrix C (result)");
 
     free(matrixA);
     free(matrixB);
     free(matrixC);
 }
 
-void PrintMatrix(float *matrix, int size, char name[])
+void PrintMatrix(double *matrix, int N, char name[])
 {
     int i;
     int j;
 
     printf("%s\n", name);
 
-    for (i = 0; i < size; i++)
+    for (i = 0; i < N; i++)
     {
-        for (j = 0; j < size; j++)
-            printf("%.2f\t", matrix[(i * size) + j]);
+        for (j = 0; j < N; j++)
+            printf("%.2f\t", matrix[(i * N) + j]);
         printf("\n");
     }
 }
 
-void FillMatrix(float *matrix, int size)
+void FillMatrix(double *matrix, int N)
 {
     int i;
     int j;
 
-    for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++)
-            matrix[(i * size) + j] = rand() % (11 * (i + 1)) * 1.12;
+    for (i = 0; i < N; i++)
+        for (j = 0; j < N; j++)
+            matrix[(i * N) + j] = rand() % (11 * (i + 1)) * 1.12;
 }
 
-void Multiply(float *matrixA, float *matrixB, float *matrixC, int size)
+void Multiply(double *matrixA, double *matrixB, double *matrixC, int N)
 {
     int i;
     int j;
     int k;
-    float result;
+    double result;
 
-    for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++)
+    for (i = 0; i < N; i++)
+        for (j = 0; j < N; j++)
         {
             result = 0.0;
-            for (k = 0; k < size; k++)
-                result += matrixA[(i * size) + k] * matrixB[(k * size) + j];
-            matrixC[(i * size) + j] = result;
+            for (k = 0; k < N; k++)
+                result += matrixA[(i * N) + k] * matrixB[(k * N) + j];
+            matrixC[(i * N) + j] = result;
         }
 }

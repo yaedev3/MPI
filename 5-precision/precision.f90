@@ -55,10 +55,13 @@ program matmult
     call Multiply(MatrixA, MatrixB, MatrixC, N)
     call AddMatrix(MatrixC, N, result)
 
+    ! Calculo estimado con la formula a^2*N^3.
     estimation = N ** 3_long * a ** 2_long
 
+    ! Calcula el % de error
     error = DABS(result - estimation) / estimation * 100.0_long;
 
+    ! Imprime el % de error
     write(*, *) 'result ', error, "N = ", N
 
     deallocate(matrixA)

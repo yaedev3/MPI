@@ -8,10 +8,10 @@ void FillMatrix(double *matrixA, double *matrixB, int size);
 
 __global__ void Multiply(double* A, double* B, double* C, int N)
 {
-    double result;      //Acumula la suma del renglon por la columna 
-    int index;          //indice del vector 
-	int ix;             //ix indica el renglon 
-	int iy;             //iy toma valores solo entre 0 a N-1
+    double result;      // Acumula la suma del renglon por la columna 
+    int index;          // Indice del vector 
+	int ix;             // Indica el renglon 
+	int iy;             // Toma valores solo entre 0 a N-1
     int k;              // Iterador 
     
     index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -31,18 +31,12 @@ __global__ void Multiply(double* A, double* B, double* C, int N)
 
 __global__ void AddMatrix(double* C, int N, double* result)
 {
-    int index;          //indice del vector 
-	int ix;             //ix indica el renglon 
-	int iy;             //iy toma valores solo entre 0 a N-1
-    
-    index = blockIdx.x * blockDim.x + threadIdx.x;
+    long i;
+    long j;
 
-	if(index < N * N)
-	{
-		ix = index / N;
-        iy = index % N;
-        *result += C[iy + N * ix];
-	}
+    for(i = 0; i < N; i++)
+        for(j = 0; j < N; j++)
+            *result += C[i + N * j];
 }
 
 int main(int argc, char *argv[])
@@ -83,7 +77,7 @@ int main(int argc, char *argv[])
     
     // Asigna el numero de hilos y calcula el numero de bloques
     Tam = N * N;
-	threads = 1024;
+	cudaDeviceGetAttribute(&threads, cudaDevAttrMaxThreadsPerBlock, 0);
     blocks = Tam / threads;
     
     if(Tam % threads > 0) //Si sobran datos, aumenta los bloques en 1
@@ -116,16 +110,13 @@ int main(int argc, char *argv[])
     cudaMemcpy(d_result, h_result, sizeDouble, cudaMemcpyHostToDevice);
 
     // Suma los valores de la multiplicacion de matrices
-    AddMatrix<<<blocks, threads>>>(d_matrixC, N, d_result);
+    AddMatrix<<<1, 1>>>(d_matrixC, N, d_result);
 
     //Copia el resultado de la suma de los elementos de la matriz en la memoria
 	cudaMemcpy(h_result, d_result, sizeDouble, cudaMemcpyDeviceToHost);
 
     // Calculo estimado con la formula a^2*N^3.
     estimation = pow(N, 3) * pow(a, 2);
-
-    //Imprime resultado real
-    printf("result: %.15le\n", h_result);
 
     // Calcula el % de error.
     error = fabs(*h_result - estimation) / estimation * 100.0;
