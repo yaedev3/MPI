@@ -18,3 +18,5 @@
 copy.sh
 out*
 */out
+*/*/out
+*/*/*/out
