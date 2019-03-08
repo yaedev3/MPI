@@ -15,6 +15,5 @@
 
 # End of https://www.gitignore.io/api/visualstudiocode
 
-logs
-logs/*
 copy.sh
+out*
