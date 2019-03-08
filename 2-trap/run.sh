@@ -22,8 +22,12 @@ case "$1" in
     ;;
     "-mf")
         echo "MPI FORTRAN program $2 threads"
-        mpif90 -o out/trap-mpi-f90.o trap-mpi.f90
-        mpiexec -np $2 ./out/trap-mpi-f90.o
+        mpif90_intel -o out/trap-mpi-f90.o trap-mpi.f90 || mpif90 -o out/trap-mpi-f90.o trap-mpi.f90
+        mpiexec_intel -np $2 ./out/trap-mpi-f90.o || mpiexec -np $2 ./out/trap-mpi-f90.o
+    ;;
+    "-cu")
+        nvcc -o out/trap-cuda.o trap.cu
+        ./out/helloworld-cuda.o
     ;;
     *)
         echo "Commands:"
@@ -31,5 +35,6 @@ case "$1" in
         echo "-f for FORTRAN serial program"
         echo "-mc #threads for C MPI program"
         echo "-mf #threads for FORTRAN MPI program"
+        echo "-cu for C CUDA program"
     ;;
 esac

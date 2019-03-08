@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ ! -d out ]; then
     echo "Creating out directory"
@@ -12,7 +12,7 @@ case "$1" in
         ./out/matmult-c.o
     ;;
     "-f")
-        gfortran -o out/matmult-f90.o matmult.f90
+        ifort -o out/matmult-f90.o matmult.f90 || gfortran -o out/matmult-f90.o matmult.f90
         ./out/matmult-f90.o
     ;;
     "-mc")
@@ -22,8 +22,8 @@ case "$1" in
     ;;
     "-mf")
         echo "MPI FORTRAN program $2 threads"
-        mpif90 -o out/matmult-mpi-f90.o matmult-mpi.f90
-        mpiexec -np $2 ./out/matmult-mpi-f90.o
+        mpif90_intel -o out/matmult-mpi-f90.o matmult-mpi.f90 || mpif90 -o out/matmult-mpi-f90.o matmult-mpi.f90
+        mpiexec_intel -np $2 ./out/matmult-mpi-f90.o || mpiexec -np $2 ./out/matmult-mpi-f90.o
     ;;
     *)
         echo "Commands:"

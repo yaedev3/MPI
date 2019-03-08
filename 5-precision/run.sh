@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ ! -d out ]; then
     echo "Creating out directory"
@@ -18,12 +18,12 @@ case "$1" in
     "-mc")
         echo "MPI C program $2 threads"
         mpicc -o out/precision-mpi-c.o precision-mpi.c -lm
-         mpiexec -np $2 ./out/precision-mpi-c.o $3
+        time mpiexec -np $2 ./out/precision-mpi-c.o $3
     ;;
     "-mf")
         echo "MPI FORTRAN program $2 threads"
-        mpif90 -o out/precision-mpi-f90.o precision-mpi.f90
-        mpiexec -np $2 ./out/precision-mpi-f90.o
+        mpif90_intel -o out/precision-mpi-f90.o trap-mpi.f90 || mpif90 -o out/precision-mpi-f90.o precision-mpi.f90
+        time mpiexec_intel -np $2 ./out/precision-mpi-f90.o || time mpiexec -np $2 ./out/precision-mpi-f90.o
     ;;
     "-cu")
         nvcc -o out/precision-cuda.o precision.cu
