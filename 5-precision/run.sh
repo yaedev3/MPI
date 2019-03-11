@@ -22,8 +22,8 @@ case "$1" in
     ;;
     "-mf")
         echo "MPI FORTRAN program $2 threads"
-        mpif90_intel -o out/precision-mpi-f90.o trap-mpi.f90 || mpif90 -o out/precision-mpi-f90.o precision-mpi.f90
-        time mpiexec_intel -np $2 ./out/precision-mpi-f90.o || time mpiexec -np $2 ./out/precision-mpi-f90.o
+        mpiifort -O3 -o out/precision-mpi-f90.o trap-mpi.f90 || mpif90 -o out/precision-mpi-f90.o precision-mpi.f90
+        time mpiexec -np $2 ./out/precision-mpi-f90.o
     ;;
     "-cu")
         nvcc -o out/precision-cuda.o precision.cu

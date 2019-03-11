@@ -22,8 +22,8 @@ case "$1" in
     ;;
     "-mf")
         echo "MPI FORTRAN program $2 threads"
-        mpif90_intel -o out/interpol-mpi-f90.o trap-mpi.f90 || mpicc -o out/interpol-mpi-f90.o interpol-mpi.f90
-        mpiexec_intel -np $2 ./out/interpol-mpi-f90.o || mpiexec -np $2 ./out/interpol-mpi-f90.o
+        mpiifort -O3 -o out/interpol-mpi-f90.o trap-mpi.f90 || mpicc -o out/interpol-mpi-f90.o interpol-mpi.f90
+        mpiexec -np $2 ./out/interpol-mpi-f90.o
     ;;
     "-cu")
         echo "CUDA C program"
