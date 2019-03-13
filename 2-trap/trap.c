@@ -16,8 +16,8 @@
 
 #include <stdio.h>
 
-double f(double x); /* Function we're integrating */
 double Trap(double a, double b, int n, double h);
+void OpenFile(double *a, double *b, int *n);
 
 int main(void)
 {
@@ -27,9 +27,7 @@ int main(void)
     double h;        /* Height of trapezoids */
     int n;           /* Number of trapezoids */
 
-    a = 0.0;
-    b = 3.0;
-    n = 1024;
+    OpenFile(&a, &b, &n);
 
     h = (b - a) / n;
     integral = Trap(a, b, n, h);
@@ -57,10 +55,32 @@ double Trap(double a, double b, int n, double h)
     for (k = 1; k <= n - 1; k++)
     {
         integral += (a + k * h) * (a + k * h);
-//        printf("Calculado %lf total %lf\n", (a + k * h) * (a + k * h), integral);
+        //        printf("Calculado %lf total %lf\n", (a + k * h) * (a + k * h), integral);
     }
 
     integral = integral * h;
 
     return integral;
-} /* Trap */
+}
+
+void OpenFile(double *a, double *b, int *n)
+{
+    FILE *file;
+    char *input_file;
+
+    input_file = "parameters.dat";
+
+    file = fopen(input_file, "r");
+
+    if (file == NULL)
+    {
+        printf("No se encontro el archivo \"parameters.dat\" se usaran parametros por defecto.\n");
+        *a = 0.0;
+        *b = 3.0;
+        *n = 1024;
+    }
+    else
+        fscanf(file, "%lf %lf %d", a, b, n);
+
+    fclose(file);
+}

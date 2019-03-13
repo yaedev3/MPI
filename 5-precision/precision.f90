@@ -35,6 +35,10 @@ program matmult
             INTEGER, INTENT(IN) :: N
             REAL(long), INTENT(OUT) :: result
         end subroutine AddMatrix
+
+        subroutine OpenFile(N)
+            INTEGER, INTENT(OUT) :: N
+        end subroutine OpenFile
     END INTERFACE
 
     INTEGER :: N
@@ -45,7 +49,7 @@ program matmult
     REAL(long) :: estimation
     REAL(long) :: error
 
-    N = 4096
+    call OpenFile(N)
 
     allocate(matrixA(N * N))
     allocate(matrixB(N * N))
@@ -131,3 +135,16 @@ subroutine AddMatrix(matrix, N, result)
     end do
 
 end subroutine AddMatrix
+
+subroutine OpenFile(N)
+    implicit none
+    INTEGER, INTENT(OUT) :: N
+    CHARACTER(len=30) :: input_file
+
+    input_file = 'N.dat'
+
+    OPEN(UNIT=1,file=input_file,ACTION="READ",STATUS='OLD')
+    READ(1,*) N
+    CLOSE(1)
+
+end subroutine OpenFile

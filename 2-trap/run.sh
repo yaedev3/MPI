@@ -27,7 +27,7 @@ case "$1" in
     ;;
     "-cu")
         nvcc -o out/trap-cuda.o trap.cu
-        ./out/helloworld-cuda.o
+        ./out/trap-cuda.o
     ;;
     *)
         echo "Commands:"

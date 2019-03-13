@@ -38,6 +38,10 @@ program matmult
             INTEGER, INTENT(IN) :: Ny
             REAL(long), INTENT(OUT) :: result
         end subroutine AddMatrix
+
+        subroutine OpenFile(N)
+            INTEGER, INTENT(OUT) :: N
+        end subroutine OpenFile
     END INTERFACE
 
     INTEGER :: N
@@ -62,7 +66,7 @@ program matmult
     call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 
     ! Asigna el tamaño de la matriz
-    N = 8
+    call OpenFile(N)
     
     ! Calcula el sobrante de datos en caso de que los procesos no sean
     ! multiplos de la informacion
@@ -223,3 +227,16 @@ subroutine AddMatrix(matrix, Nx, Ny, result)
     end do
 
 end subroutine AddMatrix
+
+subroutine OpenFile(N)
+    implicit none
+    INTEGER, INTENT(OUT) :: N
+    CHARACTER(len=30) :: input_file
+
+    input_file = 'N.dat'
+
+    OPEN(UNIT=1,file=input_file,ACTION="READ",STATUS='OLD')
+    READ(1,*) N
+    CLOSE(1)
+
+end subroutine OpenFile

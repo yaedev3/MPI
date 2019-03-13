@@ -9,15 +9,24 @@ program main
     
     ! Calculate local integral
     INTERFACE 
+
        SUBROUTINE Trap(left_endpt, right_endpt, trap_count, base_len, estimate)
-       use precision
-       IMPLICIT NONE
-       REAL(long), INTENT(IN) :: left_endpt
-       REAL(long), INTENT(IN) :: right_endpt
-       REAL(long), INTENT(IN) :: base_len
-       INTEGER, INTENT(IN) :: trap_count
-       REAL(long), INTENT(OUT) :: estimate
+            use precision
+            IMPLICIT NONE
+            REAL(long), INTENT(IN) :: left_endpt
+            REAL(long), INTENT(IN) :: right_endpt
+            REAL(long), INTENT(IN) :: base_len
+            INTEGER, INTENT(IN) :: trap_count
+            REAL(long), INTENT(OUT) :: estimate
        END SUBROUTINE Trap
+
+       subroutine OpenFile(a, b, n)
+            use precision
+            implicit none
+            REAL(long), INTENT(OUT) :: a
+            REAL(long), INTENT(OUT) :: b
+            INTEGER, INTENT(OUT) :: n
+        end subroutine OpenFile
     END INTERFACE
     
     ! Declaration of variables
@@ -44,9 +53,7 @@ program main
     call MPI_COMM_SIZE(MPI_COMM_WORLD, comm_sz, ierror)
     
     ! Assignment
-    n = 1024_long
-    a = 0.0_long
-    b = 3.0_long
+    CALL OpenFile(a, b, n)
 
     h = (b - a) / n         ! h is the same for all processes 
     local_n = n / comm_sz   ! So is the number of trapezoids 
@@ -118,3 +125,30 @@ SUBROUTINE Trap(left_endpt, right_endpt, trap_count, base_len, estimate)
     estimate = estimate * base_len
     
 END SUBROUTINE Trap
+
+subroutine OpenFile(a, b, n)
+    use precision
+    implicit none
+    REAL(long), INTENT(OUT) :: a
+    REAL(long), INTENT(OUT) :: b
+    INTEGER, INTENT(OUT) :: n
+    INTEGER :: stat
+    CHARACTER(len=30) :: input_file
+
+    input_file = 'parameters.dat'
+
+    OPEN(UNIT=1,file=input_file,ACTION="READ",IOSTAT=stat,STATUS='OLD')
+    if (stat .ne. 0) then
+        a = 0.0_long
+        b = 3.0_long
+        n = 1024
+        write(*, *) 'No se encontro el archivo \"parameters.dat\" se usaran parametros por defecto.'
+    else 
+        READ(1, *) a
+        READ(1, *) b
+        READ(1,*) n
+    end if
+
+    CLOSE(1)
+
+end subroutine OpenFile

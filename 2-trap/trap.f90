@@ -6,8 +6,8 @@ program main
     use precision
     implicit none
 
-    ! Calculate local integral
     INTERFACE 
+    
     SUBROUTINE Trap(a, b, n, h, integral)
         use precision
         implicit none
@@ -17,6 +17,15 @@ program main
         REAL(long), INTENT(IN) :: h
         REAL(long), INTENT(OUT) :: integral
     END SUBROUTINE Trap
+
+    subroutine OpenFile(a, b, n)
+        use precision
+        implicit none
+        REAL(long), INTENT(OUT) :: a
+        REAL(long), INTENT(OUT) :: b
+        INTEGER, INTENT(OUT) :: n
+    end subroutine OpenFile
+
     END INTERFACE
 
     ! Declaration of variables
@@ -27,9 +36,7 @@ program main
     INTEGER :: n
 
     ! Assignment
-    a = 0.0_long
-    b = 3.0_long
-    n = 1024
+    CALL OpenFile(a, b, n)
 
     h = (b - a) / n;
     CALL Trap (a, b, n, h, integral)
@@ -65,3 +72,30 @@ SUBROUTINE Trap(a, b, n, h, integral)
     integral = integral * h
 
 END SUBROUTINE Trap
+
+subroutine OpenFile(a, b, n)
+    use precision
+    implicit none
+    REAL(long), INTENT(OUT) :: a
+    REAL(long), INTENT(OUT) :: b
+    INTEGER, INTENT(OUT) :: n
+    INTEGER :: stat
+    CHARACTER(len=30) :: input_file
+
+    input_file = 'parameters.dat'
+
+    OPEN(UNIT=1,file=input_file,ACTION="READ",IOSTAT=stat,STATUS='OLD')
+    if (stat .ne. 0) then
+        a = 0.0_long
+        b = 3.0_long
+        n = 1024
+        write(*, *) 'No se encontro el archivo \"parameters.dat\" se usaran parametros por defecto.'
+    else 
+        READ(1, *) a
+        READ(1, *) b
+        READ(1,*) n
+    end if
+
+    CLOSE(1)
+
+end subroutine OpenFile

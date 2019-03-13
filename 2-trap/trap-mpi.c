@@ -30,6 +30,7 @@
 
 /* Calculate local integral  */
 double Trap(double left_endpt, double right_endpt, int trap_count, double base_len);
+void OpenFile(double *a, double *b, int *n);
 
 int main(int argc, char *argv[])
 {
@@ -55,9 +56,7 @@ int main(int argc, char *argv[])
    /* Find out how many processes are being used */
    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-   a = 0.0;
-   b = 3.0;
-   n = 1024;
+   OpenFile(&a, &b, &n);
    
    h = (b - a) / n;       /* h is the same for all processes */
    local_n = n / comm_sz; /* So is the number of trapezoids  */
@@ -123,4 +122,26 @@ double Trap(double left_endpt, double right_endpt, int trap_count, double base_l
    estimate = estimate * base_len;
 
    return estimate;
-} /*  Trap  */
+}
+
+void OpenFile(double *a, double *b, int *n)
+{
+    FILE *file;
+    char *input_file;
+
+    input_file = "parameters.dat";
+
+    file = fopen(input_file, "r");
+
+    if (file == NULL)
+    {
+        printf("No se encontro el archivo \"parameters.dat\" se usaran parametros por defecto.\n");
+        *a = 0.0;
+        *b = 3.0;
+        *n = 1024;
+    }
+    else
+        fscanf(file, "%lf %lf %d", a, b, n);
+
+    fclose(file);
+}
