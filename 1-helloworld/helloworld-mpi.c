@@ -1,20 +1,3 @@
-/* File: helloworld-mpi.c
- *
- * Purpose: 
- * 
- * Input:
- * 
- * Output:
- * 
- * Compile: mpicc -o helloworld-mpi-c.o helloworld-mpi.c
- * 
- * Run: mpiexec -np 10 ./helloworld-mpi-c.o
- * 
- * Algorithm:
- * 
- * Note:
- * 
- * */
 #include <stdio.h>
 
 #include <mpi.h>

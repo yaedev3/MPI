@@ -1,54 +1,63 @@
-/* File: matmult.c
- *
- * Purpose: 
- * 
- * Input:
- * 
- * Output:
- * 
- * Compile: gcc -o matmult-c.o matmult.c
- * 
- * Run: ./matmult-c.o
- * 
- * Algorithm:
- * 
- * Note:
- * 
- * */
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+
+// Valor constante para llenar la matriz
+
+static double a = 1.0E-10;
 
 void PrintMatrix(double *matrix, int N, char name[]);
 void FillMatrix(double *matrix, int N);
 void Multiply(double *matrixA, double *matrixB, double *matrixC, int N);
 
-void main()
+int main(int argc, char *argv[])
 {
-    int N;
-    double *matrixA;
-    double *matrixB;
-    double *matrixC;
+    int N;                  // 
+    double *matrixA;        //
+    double *matrixB;        //
+    double *matrixC;        //
 
-    N = 5;
+    // Verifica si tiene los argumentos necesarios para inicializa el tamaño de las matrices
+    if (argc < 2)
+    {
+        printf("Falta el argumento del tamaño\n");
+        return -1;
+    }
+
+    // Asigna el valor del primer argumento a la variable de tamaño
+    sscanf(argv[1], "%d", &N);
+
+    // Reserva la memoria para las tres matrices
     matrixA = (double *)malloc(sizeof(double) * N * N);
     matrixB = (double *)malloc(sizeof(double) * N * N);
     matrixC = (double *)malloc(sizeof(double) * N * N);
 
+    // Llena la matriz A y B con el valor constante
     FillMatrix(matrixA, N);
     FillMatrix(matrixB, N);
 
+    // Multiplica las matrices A y B guardando el valor en la matriz C
     Multiply(matrixA, matrixB, matrixC, N);
 
+    // Imprime el contenido de las tres matrices
     PrintMatrix(matrixA, N, "Matrix A");
     PrintMatrix(matrixB, N, "Matrix B");
     PrintMatrix(matrixC, N, "Matrix C (result)");
 
+    // Libera la memoria de las tres matrices
     free(matrixA);
     free(matrixB);
     free(matrixC);
+
+    return 0;
 }
 
+/**
+ * @brief 
+ * 
+ * @param matrix 
+ * @param N 
+ * @param name 
+ */
 void PrintMatrix(double *matrix, int N, char name[])
 {
     int i;
@@ -59,11 +68,17 @@ void PrintMatrix(double *matrix, int N, char name[])
     for (i = 0; i < N; i++)
     {
         for (j = 0; j < N; j++)
-            printf("%.2f\t", matrix[(i * N) + j]);
+            printf("%.2le\t", matrix[(i * N) + j]);
         printf("\n");
     }
 }
 
+/**
+ * @brief 
+ * 
+ * @param matrix 
+ * @param N 
+ */
 void FillMatrix(double *matrix, int N)
 {
     int i;
@@ -71,9 +86,17 @@ void FillMatrix(double *matrix, int N)
 
     for (i = 0; i < N; i++)
         for (j = 0; j < N; j++)
-            matrix[(i * N) + j] = rand() % (11 * (i + 1)) * 1.12;
+            matrix[(i * N) + j] = a;
 }
 
+/**
+ * @brief 
+ * 
+ * @param matrixA 
+ * @param matrixB 
+ * @param matrixC 
+ * @param N 
+ */
 void Multiply(double *matrixA, double *matrixB, double *matrixC, int N)
 {
     int i;

@@ -1,19 +1,3 @@
-! File: matmult.f90
-!
-! Purpose: 
-! 
-! Input:
-!  
-! Output:
-! 
-! Compile: gfortran -o matmult-f90.o matmult.f90
-! 
-! Run: ./matmult-f90.o
-! 
-! Algorithm:
-! 
-! Note:
-
 program matmult
     implicit none
     

@@ -1,20 +1,3 @@
-/* File: matmult.c
- *
- * Purpose: 
- * 
- * Input:
- * 
- * Output:
- * 
- * Compile: gcc -o matmult-c.o matmult.c
- * 
- * Run: ./matmult-c.o
- * 
- * Algorithm:
- * 
- * Note:
- * 
- * */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

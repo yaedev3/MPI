@@ -1,23 +1,8 @@
-/* File: matmult-mpi.c
- *
- * Purpose: 
- * 
- * Input:
- * 
- * Output:
- * 
- * Compile: mpicc -o matmult-mpi-c.o matmult-mpi.c
- * 
- * Run: mpiexec -np 3 ./matmult-mpi-c.o
- * 
- * Algorithm:
- * 
- * Note:
- * 
- * */
 #include <stdio.h>
 #include <stdlib.h>
 #include "mpi.h"
+
+static double a = 1.0;
 
 void PrintMatrix(double *matrix, int N, char name[]);
 void FillMatrix(double *matrix, int size);
@@ -125,7 +110,7 @@ void FillMatrix(double *matrix, int size)
 
     for (i = 0; i < size; i++)
         for (j = 0; j < size; j++)
-            matrix[(i * size) + j] = rand() % (11 * (i + 1)) * 1.12;
+            matrix[(i * size) + j] = a;
 }
 
 void Multiply(double *matrixA, double *matrixB, double *matrixC, int sizeX, int sizeY)

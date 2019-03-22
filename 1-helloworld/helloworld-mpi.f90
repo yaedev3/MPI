@@ -1,19 +1,3 @@
-! File: helloworld-mpi.f90
-!
-! Purpose: 
-! 
-! Input:
-! 
-! Output:
-! 
-! Compile: mpif90 -o helloworld-mpi-f90.o helloworld-mpi.f90
-! 
-! Run: mpiexec -np 10 ./helloworld-mpi-f90.o
-! 
-! Algorithm:
-! 
-! Note:
-
 program helloworld
     implicit none
     include 'mpif.h'

@@ -10,13 +10,13 @@ double AddMatrix(double *matrix, int N);
 
 int main(int argc, char *argv[])
 {
-    int N;
-    double *matrixA;
-    double *matrixB;
-    double *matrixC;
-    double result;
-    double estimation;
-    double error;
+    int N;                      //
+    double *matrixA;            //
+    double *matrixB;            //
+    double *matrixC;            //
+    double result;              //
+    double estimation;          //
+    double error;               //
 
     // Verifica si tiene los argumentos necesarios para inicializa el tamaño de las matrices
     if (argc < 2)
@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
     free(matrixA);
     free(matrixB);
     free(matrixC);
+    
     return 0;
 }
 

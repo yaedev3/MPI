@@ -1,5 +1,5 @@
 MODULE precision
-  INTEGER ,PARAMETER:: long=SELECTED_REAL_KIND(15,307) !(6,37) for real(float), (15,307) for double
+  INTEGER ,PARAMETER:: long=SELECTED_REAL_KIND(15, 307) !(6,37) for real(float), (15,307) for double
 END MODULE precision
 
 program main

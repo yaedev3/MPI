@@ -1,19 +1,3 @@
-! File: matmult-mpi.f90
-!
-! Purpose: 
-! 
-! Input:
-! 
-! Output:
-! 
-! Compile: mpif90_intel -o matmult-mpi-f90.o matmult-mpi.f90
-! 
-! Run: mpiexec_intel -np 10 ./matmult-mpi-f90.o
-! 
-! Algorithm:
-! 
-! Note:
-
 program matmult
     implicit none
     include 'mpif.h'
