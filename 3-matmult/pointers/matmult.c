@@ -1,20 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 // Valor constante para llenar la matriz
-
 static double a = 1.0E-10;
 
-void PrintMatrix(double *matrix, int N, char name[]);
-void FillMatrix(double *matrix, int N);
+void FillMatrix(double *matrixA, double *matrixB, int N);
 void Multiply(double *matrixA, double *matrixB, double *matrixC, int N);
+double AddMatrix(double *matrix, int N);
 
 int main(int argc, char *argv[])
 {
-    int N;                  // 
-    double *matrixA;        //
-    double *matrixB;        //
-    double *matrixC;        //
+    int N;             // Dimension de la matriz
+    double *matrixA;   // Primera matriz
+    double *matrixB;   // Segunda matriz
+    double *matrixC;   // Matriz resultado
+    double result;     // Resultado de la suma de la matriz resultado
+    double estimation; // Estimacion del calculo
+    double error;      // Error encontrado
 
     // Verifica si tiene los argumentos necesarios para inicializa el tamaño de las matrices
     if (argc < 2)
@@ -32,16 +35,22 @@ int main(int argc, char *argv[])
     matrixC = (double *)malloc(sizeof(double) * N * N);
 
     // Llena la matriz A y B con el valor constante
-    FillMatrix(matrixA, N);
-    FillMatrix(matrixB, N);
+    FillMatrix(matrixA, matrixB, N);
 
     // Multiplica las matrices A y B guardando el valor en la matriz C
     Multiply(matrixA, matrixB, matrixC, N);
 
-    // Imprime el contenido de las tres matrices
-    PrintMatrix(matrixA, N, "Matrix A");
-    PrintMatrix(matrixB, N, "Matrix B");
-    PrintMatrix(matrixC, N, "Matrix C (result)");
+    //Calcula la suma de los valores de la matriz C.
+    result = AddMatrix(matrixC, N);
+
+    // Calculo estimado con la formula a^2*N^3.
+    estimation = pow(N, 3) * pow(a, 2);
+
+    // Calcula el % de error.
+    error = fabs(result - estimation) / estimation * 100.0;
+
+    // Imprime el % de error.
+    printf("Error %.15le N = %d\n", error, N);
 
     // Libera la memoria de las tres matrices
     free(matrixA);
@@ -51,58 +60,36 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-/**
- * @brief 
- * 
- * @param matrix 
- * @param N 
- * @param name 
- */
-void PrintMatrix(double *matrix, int N, char name[])
+// Llena las dos matrices con el valor constante.
+void FillMatrix(
+    double *matrixA, // Primera matriz
+    double *matrixB, // Primera matriz
+    int N            // Dimension de la matriz
+)
 {
-    int i;
-    int j;
-
-    printf("%s\n", name);
-
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < N; j++)
-            printf("%.2le\t", matrix[(i * N) + j]);
-        printf("\n");
-    }
-}
-
-/**
- * @brief 
- * 
- * @param matrix 
- * @param N 
- */
-void FillMatrix(double *matrix, int N)
-{
-    int i;
-    int j;
+    int i; // Indice el renglon
+    int j; // Indice de la columna
 
     for (i = 0; i < N; i++)
         for (j = 0; j < N; j++)
-            matrix[(i * N) + j] = a;
+        {
+            matrixA[(i * N) + j] = a;
+            matrixB[(i * N) + j] = a;
+        }
 }
 
-/**
- * @brief 
- * 
- * @param matrixA 
- * @param matrixB 
- * @param matrixC 
- * @param N 
- */
-void Multiply(double *matrixA, double *matrixB, double *matrixC, int N)
+// Multiplica las dos matrices y almacena el resultado en la matriz de resultado
+void Multiply(
+    double *matrixA, // Primera matriz
+    double *matrixB, // Segunda matriz
+    double *matrixC, // Matriz resultado
+    int N            // Dimension de la matriz
+)
 {
-    int i;
-    int j;
-    int k;
-    double result;
+    int i;         // Indice del renglon
+    int j;         // Indice de la columna
+    int k;         // Indice de la multiplicacion
+    double result; // Resultado de la multiplicacion
 
     for (i = 0; i < N; i++)
         for (j = 0; j < N; j++)
@@ -112,4 +99,23 @@ void Multiply(double *matrixA, double *matrixB, double *matrixC, int N)
                 result += matrixA[(i * N) + k] * matrixB[(k * N) + j];
             matrixC[(i * N) + j] = result;
         }
+}
+
+// Suma todos los elementos de una matriz y regresa el resultado
+double AddMatrix(
+    double *matrix, // Matriz resultado
+    int N           // Dimension de la matriz
+)
+{
+    double result; // Resultado de la suma
+    int i;         // Indice del renglon
+    int j;         // Indice de la columna
+
+    result = 0.0;
+
+    for (i = 0; i < N; i++)
+        for (j = 0; j < N; j++)
+            result += matrix[(i * N) + j];
+
+    return result;
 }

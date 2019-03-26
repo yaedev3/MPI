@@ -8,8 +8,8 @@ fi
 case "$1" in
     
     "-c")
-        gcc -o out/matmult-c.o matmult.c
-        ./out/matmult-c.o
+        gcc -o out/matmult-c.o matmult.c -lm
+        ./out/matmult-c.o $2
     ;;
     "-f")
         ifort -o out/matmult-f90.o matmult.f90 || gfortran -o out/matmult-f90.o matmult.f90
@@ -17,8 +17,8 @@ case "$1" in
     ;;
     "-mc")
         echo "MPI C program $2 threads"
-        mpicc -o out/matmult-mpi-c.o matmult-mpi.c
-        mpiexec -np $2 ./out/matmult-mpi-c.o
+        mpicc -o out/matmult-mpi-c.o matmult-mpi.c -lm
+        mpiexec -np $2 ./out/matmult-mpi-c.o $3
     ;;
     "-mf")
         echo "MPI FORTRAN program $2 threads"

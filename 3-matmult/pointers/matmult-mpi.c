@@ -1,131 +1,192 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mpi.h"
+#include <math.h>
 
-static double a = 1.0;
+// Valor constante para llenar la matriz
+static double a = 1.0E-10;
 
-void PrintMatrix(double *matrix, int N, char name[]);
-void FillMatrix(double *matrix, int size);
-void Multiply(double *matrixA, double *matrixB, double *matrixC, int sizeX, int sizeY);
+void FillMatrix(double *matrixA, double *matrixB, int N);
+void Multiply(double *matrixA, double *matrixB, double *matrixC, int Nx, int Ny);
+double AddMatrix(double *matrix, int Nx, int Ny);
 
 int main(int argc, char *argv[])
 {
-    int rank;        //
-    int proccess;    //
-    int size;        //
-    int i;           //
-    int waste;       //
-    int n;           //
-    int processSize; //
-    double *matrixA; //
-    double *matrixB; //
-    double *matrixC; //
+    int N;               // Dimension de la matriz
+    int rank;            // Indice de cada proceso
+    int proccess;        // Numero total de procesos
+    int waste;           // Residuo de informacion
+    int n_local;         // Tamaño de informacion por proceso
+    int processSize;     // Tamaño corregido
+    int i;               // Iterador de procesos
+    double *matrixA;     // Primera matriz
+    double *matrixB;     // Segunda matriz
+    double *matrixC;     // Matriz resultado
+    double result;       // Resultado de la suma de la matriz resultado
+    double result_local; // Resultado de la suma local de cada proceso
+    double estimation;   // Estimacion del calculo
+    double error;        // Error encontrado
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &proccess);
 
-    size = 5;
-    waste = size % (proccess - 1);
-    n = size / (proccess - 1);
-    matrixB = (double *)malloc(sizeof(double) * size * size);
-
-    if (rank == 0)
+    // Verifica si tiene los argumentos necesarios para inicializa el tamaño de las matrices
+    if (argc < 2)
     {
-        matrixA = (double *)malloc(sizeof(double) * size * size);
-        matrixC = (double *)malloc(sizeof(double) * size * size);
-        FillMatrix(matrixA, size);
-        FillMatrix(matrixB, size);
+        printf("Falta el argumento del tamaño\n");
+        return -1;
     }
 
-    MPI_Bcast(matrixB, size * size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    // Asigna el valor del primer argumento a la variable de tamaño
+    sscanf(argv[1], "%d", &N);
+
+    // Calcula el sobrante de datos en caso de que los procesos no sean
+    // multiplos de la informacion
+    waste = N % (proccess - 1);
+
+    // Calcula el numero de datos que va a tomar cada proceso
+    n_local = N / (proccess - 1);
+
+    //Inicializa la matriz B para todos los procesos
+    matrixB = (double *)malloc(sizeof(double) * N * N);
 
     if (rank == 0)
     {
+        // Inicializa matriz A con el tamaño total (N * N)
+        matrixA = (double *)malloc(sizeof(double) * N * N);
 
-        processSize = n;
+        // Inicializa el resultado en 0.0
+        result = 0.0;
 
-        for (i = 1; i <= (proccess - 1); i++)
+        // Llena la matriz A y B con el valor constante
+        FillMatrix(matrixA, matrixB, N);
+    }
+
+    // Comparte la informacion de la matriz B con los demas procesos.
+    MPI_Bcast(matrixB, N * N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+    if (rank == 0)
+    {
+        // Envia partes de la matriz A a todos los demas procesos
+        processSize = n_local;
+        for (i = 1; i <= proccess - 1; i++)
         {
             if (i == proccess - 1)
-                processSize = waste + n;
-            MPI_Send(matrixA + ((i - 1) * size * n), processSize * size, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+                processSize = waste + n_local;
+            MPI_Send(matrixA + ((i - 1) * N * n_local), processSize * N, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
         }
 
-        processSize = n;
-
-        for (i = 1; i <= (proccess - 1); i++)
+        // Recibe el resultado de la suma de todos los elementos de la matriz C
+        for (i = 1; i <= proccess - 1; i++)
         {
-            if (i == proccess - 1)
-                processSize = waste + n;
-            MPI_Recv(matrixC + ((i - 1) * size * n), processSize * size, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&result_local, 1, MPI_DOUBLE, i, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            result += result_local;
         }
 
-        PrintMatrix(matrixA, size, "Matrix A");
-        PrintMatrix(matrixB, size, "Matrix B");
-        PrintMatrix(matrixC, size, "Matrix C (result)");
+        // Calculo estimado con la formula a^2*N^3.
+        estimation = pow(N, 3) * pow(a, 2);
+
+        // Calcula el % de error.
+        error = fabs(result - estimation) / estimation * 100.0;
+
+        // Imprime el % de error.
+        printf("Error %.15le N = %d\n", error, N);
     }
     else
     {
+        // Verifica si es el ultimo proceso para calcular el reciduo
         if (rank == proccess - 1)
-            processSize = waste + n;
+            processSize = waste + n_local;
         else
-            processSize = n;
+            processSize = n_local;
 
-        matrixA = (double *)malloc(sizeof(double) * processSize * size);
-        matrixC = (double *)malloc(sizeof(double) * processSize * size);
+        // Inicializa las matrices A y C con los tamaños correspondientes a cada proceso.
+        matrixA = (double *)malloc(sizeof(double) * processSize * N);
+        matrixC = (double *)malloc(sizeof(double) * processSize * N);
 
-        MPI_Recv(matrixA, processSize * size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        Multiply(matrixA, matrixB, matrixC, processSize, size);
-        MPI_Send(matrixC, processSize * size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+        // Recibe la matriz A del proceso 0
+        MPI_Recv(matrixA, processSize * N, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        // Hace la multiplicacion de matrices.
+        Multiply(matrixA, matrixB, matrixC, processSize, N);
+
+        // Hace la suma de todos los elementos de la matriz C
+        result_local = AddMatrix(matrixC, processSize, N);
+
+        // Envia el resultado de la multiplicacion al proceso 0.
+        MPI_Send(&result_local, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+
+        //Libera la memoria de la matriz C
+        free(matrixC);
     }
 
+    //Libera la memoria de las matrices A y B
     free(matrixA);
     free(matrixB);
-    free(matrixC);
 
     MPI_Finalize();
     return 0;
 }
 
-void PrintMatrix(double *matrix, int N, char name[])
+// Llena las dos matrices con el valor constante.
+void FillMatrix(
+    double *matrixA, // Primera matriz
+    double *matrixB, // Primera matriz
+    int N            // Dimension de la matriz
+)
 {
-    int i;
-    int j;
-
-    printf("%s\n", name);
+    int i; // Indice el renglon
+    int j; // Indice de la columna
 
     for (i = 0; i < N; i++)
-    {
         for (j = 0; j < N; j++)
-            printf("%.2f\t", matrix[(i * N) + j]);
-        printf("\n");
-    }
+        {
+            matrixA[(i * N) + j] = a;
+            matrixB[(i * N) + j] = a;
+        }
 }
 
-void FillMatrix(double *matrix, int size)
+// Multiplica las dos matrices y almacena el resultado en la matriz de resultado
+void Multiply(
+    double *matrixA, // Primera matriz
+    double *matrixB, // Segunda matriz
+    double *matrixC, // Matriz resultado
+    int Nx,          // Tamaño de renglones
+    int Ny           // Tamaño de columnas
+)
 {
-    int i;
-    int j;
+    int i;         // Indice del renglon
+    int j;         // Indice de la columna
+    int k;         // Indice de la multiplicacion
+    double result; // Resultado de la multiplicacion
 
-    for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++)
-            matrix[(i * size) + j] = a;
-}
-
-void Multiply(double *matrixA, double *matrixB, double *matrixC, int sizeX, int sizeY)
-{
-    int i;
-    int j;
-    int k;
-    double result;
-
-    for (i = 0; i < sizeX; i++)
-        for (j = 0; j < sizeY; j++)
+    for (i = 0; i < Nx; i++)
+        for (j = 0; j < Ny; j++)
         {
             result = 0.0;
-            for (k = 0; k < sizeY; k++)
-                result += matrixA[(i * sizeY) + k] * matrixB[(k * sizeY) + j];
-            matrixC[(i * sizeY) + j] = result;
+            for (k = 0; k < Ny; k++)
+                result += matrixA[(i * Ny) + k] * matrixB[(k * Ny) + j];
+            matrixC[(i * Ny) + j] = result;
         }
+}
+
+// Suma todos los elementos de una matriz y regresa el resultado
+double AddMatrix(
+    double *matrix, // Matriz resultado
+    int Nx,         // Tamaño de renglones
+    int Ny          // Tamaño de columnas
+)
+{
+    double result; // Resultado de la suma
+    int i;         // Indice del renglon
+    int j;         // Indice de la columna
+
+    result = 0.0;
+
+    for (i = 0; i < Nx; i++)
+        for (j = 0; j < Ny; j++)
+            result += matrix[(i * Nx) + j];
+
+    return result;
 }

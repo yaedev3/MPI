@@ -3,6 +3,7 @@
 #include "mpi.h"
 #include <math.h>
 
+// Valor constante para llenar la matriz
 static double a = 1.0E-10;
 
 void FillMatrix(double *matrixA, double *matrixB, int N);
@@ -11,20 +12,20 @@ double AddMatrix(double *matrix, int Nx, int Ny);
 
 int main(int argc, char *argv[])
 {
-    int N;
-    int rank;
-    int proccess;
-    int waste;
-    int n_local;
-    int processSize;
-    int i;
-    double *matrixA;
-    double *matrixB;
-    double *matrixC;
-    double result;
-    double result_local;
-    double estimation;
-    double error;
+    int N;               // Dimension de la matriz
+    int rank;            // Indice de cada proceso
+    int proccess;        // Numero total de procesos
+    int waste;           // Residuo de informacion
+    int n_local;         // Tamaño de informacion por proceso
+    int processSize;     // Tamaño corregido
+    int i;               // Iterador de procesos
+    double *matrixA;     // Primera matriz
+    double *matrixB;     // Segunda matriz
+    double *matrixC;     // Matriz resultado
+    double result;       // Resultado de la suma de la matriz resultado
+    double result_local; // Resultado de la suma local de cada proceso
+    double estimation;   // Estimacion del calculo
+    double error;        // Error encontrado
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -90,7 +91,7 @@ int main(int argc, char *argv[])
         error = fabs(result - estimation) / estimation * 100.0;
 
         // Imprime el % de error.
-        printf("Error %le N = %d\n", error, N);
+        printf("Error %.15le N = %d\n", error, N);
     }
     else
     {
@@ -128,10 +129,15 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void FillMatrix(double *matrixA, double *matrixB, int N)
+// Llena las dos matrices con el valor constante.
+void FillMatrix(
+    double *matrixA, // Primera matriz
+    double *matrixB, // Primera matriz
+    int N            // Dimension de la matriz
+)
 {
-    int i;
-    int j;
+    int i; // Indice el renglon
+    int j; // Indice de la columna
 
     for (i = 0; i < N; i++)
         for (j = 0; j < N; j++)
@@ -141,12 +147,19 @@ void FillMatrix(double *matrixA, double *matrixB, int N)
         }
 }
 
-void Multiply(double *matrixA, double *matrixB, double *matrixC, int Nx, int Ny)
+// Multiplica las dos matrices y almacena el resultado en la matriz de resultado
+void Multiply(
+    double *matrixA, // Primera matriz
+    double *matrixB, // Segunda matriz
+    double *matrixC, // Matriz resultado
+    int Nx,          // Tamaño de renglones
+    int Ny           // Tamaño de columnas
+)
 {
-    int i;
-    int j;
-    int k;
-    double result;
+    int i;         // Indice del renglon
+    int j;         // Indice de la columna
+    int k;         // Indice de la multiplicacion
+    double result; // Resultado de la multiplicacion
 
     for (i = 0; i < Nx; i++)
         for (j = 0; j < Ny; j++)
@@ -158,11 +171,16 @@ void Multiply(double *matrixA, double *matrixB, double *matrixC, int Nx, int Ny)
         }
 }
 
-double AddMatrix(double *matrix, int Nx, int Ny)
+// Suma todos los elementos de una matriz y regresa el resultado
+double AddMatrix(
+    double *matrix, // Matriz resultado
+    int Nx,         // Tamaño de renglones
+    int Ny          // Tamaño de columnas
+)
 {
-    double result;
-    int i;
-    int j;
+    double result; // Resultado de la suma
+    int i;         // Indice del renglon
+    int j;         // Indice de la columna
 
     result = 0.0;
 
