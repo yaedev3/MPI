@@ -41,22 +41,29 @@ program matmult
         end subroutine OpenFile
     END INTERFACE
 
-    INTEGER :: N
-    REAL(long), POINTER, DIMENSION(:) :: matrixA
-    REAL(long), POINTER, DIMENSION(:) :: matrixB
-    REAL(long), POINTER, DIMENSION(:) :: matrixC
-    REAL(long) :: result
-    REAL(long) :: estimation
-    REAL(long) :: error
+    INTEGER :: N                                        ! Dimension de la matriz
+    REAL(long), POINTER, DIMENSION(:) :: matrixA        ! Primera matriz
+    REAL(long), POINTER, DIMENSION(:) :: matrixB        ! Segunda matriz
+    REAL(long), POINTER, DIMENSION(:) :: matrixC        ! Matriz resultado
+    REAL(long) :: result                                ! Resultado de la suma de la matriz resultado
+    REAL(long) :: estimation                            ! Estimacion del calculo
+    REAL(long) :: error                                 ! Error encontrado
 
+    ! Asigna la dimension de la matriz
     call OpenFile(N)
 
+    ! Reserva la memoria para las tres matrices
     allocate(matrixA(N * N))
     allocate(matrixB(N * N))
     allocate(matrixC(N * N))
 
+    ! Llena la matriz A y B con el valor constante
     call FillMatrix(matrixA,matrixB, N)
+    
+    ! Multiplica las matrices A y B guardando el valor en la matriz C
     call Multiply(MatrixA, MatrixB, MatrixC, N)
+    
+    ! Calcula la suma de los valores de la matriz C
     call AddMatrix(MatrixC, N, result)
 
     ! Calculo estimado con la formula a^2*N^3.
@@ -68,21 +75,23 @@ program matmult
     ! Imprime el % de error
     write(*, *) 'result ', error, "N = ", N
 
+    ! Libera la memoria de las tres matrices
     deallocate(matrixA)
     deallocate(matrixB)
     deallocate(matrixC)
 
 end program matmult
 
+! Llena las dos matrices con el valor constante
 subroutine FillMatrix(matrixA, matrixB, N)
     use precision
     use parameters
     IMPLICIT NONE
-    REAL(long), INTENT(OUT) :: matrixA(:)
-    REAL(long), INTENT(OUT) :: matrixB(:)
-    INTEGER, INTENT(IN) :: N
-    INTEGER :: i
-    INTEGER :: j
+    REAL(long), INTENT(OUT) :: matrixA(:)   ! Primera matriz
+    REAL(long), INTENT(OUT) :: matrixB(:)   ! Segunda matriz
+    INTEGER, INTENT(IN) :: N                ! Dimension de la matriz
+    INTEGER :: i                            ! Indice el renglon
+    INTEGER :: j                            ! Indice de la columna
 
     do i = 1, N, 1
         do j = 1, N, 1
@@ -93,17 +102,18 @@ subroutine FillMatrix(matrixA, matrixB, N)
 
 end subroutine FillMatrix
 
+! Multiplica las dos matrices y almacena el resultado en la matriz de resultado
 subroutine Multiply(MatrixA, MatrixB, MatrixC, N)
     use precision
     IMPLICIT NONE
-    REAL(long), INTENT(IN) :: MatrixA(:)
-    REAL(long), INTENT(IN) :: MatrixB(:)
-    REAL(long), INTENT(OUT) :: MatrixC(:)
-    INTEGER, INTENT(IN) :: N
-    INTEGER :: i
-    INTEGER :: j
-    INTEGER :: k
-    REAL(long) :: result
+    REAL(long), INTENT(IN) :: MatrixA(:)    ! Primera matriz
+    REAL(long), INTENT(IN) :: MatrixB(:)    ! Segunda matriz
+    REAL(long), INTENT(OUT) :: MatrixC(:)   ! Matriz resultado
+    INTEGER, INTENT(IN) :: N                ! Dimension de la matriz
+    INTEGER :: i                            ! Indice del renglon
+    INTEGER :: j                            ! Indice de la columna
+    INTEGER :: k                            ! Indice de la multiplicacion
+    REAL(long) :: result                    ! Resultado de la multiplicacion
 
     do i = 1, N, 1
         do j = 1, N, 1
@@ -117,14 +127,15 @@ subroutine Multiply(MatrixA, MatrixB, MatrixC, N)
 
 end subroutine Multiply
 
+! Suma todos los elementos de una matriz y regresa el resultado
 subroutine AddMatrix(matrix, N, result)
     use precision
     IMPLICIT NONE
-    REAL(long), INTENT(IN) :: matrix(:)
-    INTEGER, INTENT(IN) :: N
-    REAL(long), INTENT(OUT) :: result
-    INTEGER :: i
-    INTEGER :: j
+    REAL(long), INTENT(IN) :: matrix(:)     ! Matriz resultado
+    INTEGER, INTENT(IN) :: N                ! Dimension de la matriz
+    REAL(long), INTENT(OUT) :: result       ! Resultado de la suma
+    INTEGER :: i                            ! Indice del renglon
+    INTEGER :: j                            ! Indice de la columna
 
     result = 0.0_long
 
@@ -136,12 +147,13 @@ subroutine AddMatrix(matrix, N, result)
 
 end subroutine AddMatrix
 
+! Abre un archivo con la dimension de la matriz
 subroutine OpenFile(N)
     implicit none
-    INTEGER, INTENT(OUT) :: N
-    CHARACTER(len=30) :: input_file
+    INTEGER, INTENT(OUT) :: N               ! Dimension de la matriz
+    CHARACTER(len=30) :: input_file         ! Nombre del archivo
 
-    input_file = 'N.dat'
+    input_file = 'parameters.dat'
 
     OPEN(UNIT=1,file=input_file,ACTION="READ",STATUS='OLD')
     READ(1,*) N

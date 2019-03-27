@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // Asigna el valor del primer argumento a la variable de tamaño
+    // Asigna la dimension de la matriz
     sscanf(argv[1], "%d", &N);
 
     // Reserva la memoria para las tres matrices
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     // Multiplica las matrices A y B guardando el valor en la matriz C
     Multiply(matrixA, matrixB, matrixC, N);
 
-    //Calcula la suma de los valores de la matriz C.
+    // Calcula la suma de los valores de la matriz C
     result = AddMatrix(matrixC, N);
 
     // Calculo estimado con la formula a^2*N^3.
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 // Llena las dos matrices con el valor constante.
 void FillMatrix(
     double *matrixA, // Primera matriz
-    double *matrixB, // Primera matriz
+    double *matrixB, // Segunda matriz
     int N            // Dimension de la matriz
 )
 {

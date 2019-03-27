@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // Asigna el valor del primer argumento a la variable de tamaño
+    // Asigna la dimension de la matriz
     sscanf(argv[1], "%d", &N);
 
     // Reserva la memoria para las tres matrices
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 // Llena las dos matrices con el valor constante.
 void FillMatrix(
     double *matrixA, // Primera matriz
-    double *matrixB, // Primera matriz
+    double *matrixB, // Segunda matriz
     int N            // Dimension de la matriz
 )
 {

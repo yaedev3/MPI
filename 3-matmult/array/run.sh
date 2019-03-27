@@ -8,7 +8,7 @@ fi
 case "$1" in
     
     "-c")
-        gcc -o out/matmult-c.o matmult.c
+        gcc -o out/matmult-c.o matmult.c -lm
         ./out/matmult-c.o
     ;;
     "-f")

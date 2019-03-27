@@ -5,8 +5,8 @@ END MODULE precision
 MODULE parameters
   USE precision
   IMPLICIT NONE
-  REAL(long), PARAMETER :: a = 1.0E-10_long
-END MODULE parameters
+  REAL(long), PARAMETER :: a = 1.0E-10_long         ! Valor constante para llenar la matriz
+END MODULE parameters   
 
 program matmult
     use precision
@@ -44,28 +44,28 @@ program matmult
         end subroutine OpenFile
     END INTERFACE
 
-    INTEGER :: N
-    REAL(long), POINTER, DIMENSION(:) :: matrixA
-    REAL(long), POINTER, DIMENSION(:) :: matrixB
-    REAL(long), POINTER, DIMENSION(:) :: matrixC
-    REAL(long) :: result
-    REAL(long) :: result_local
-    REAL(long) :: estimation
-    REAL(long) :: error
-    INTEGER :: rank 
-    INTEGER :: process
-    INTEGER :: processSize
-    INTEGER :: ierror
-    INTEGER :: status(MPI_STATUS_SIZE)
-    INTEGER :: waste
-    INTEGER :: n_local
-    INTEGER :: i
+    INTEGER :: N                                    ! Dimension de la matriz
+    REAL(long), POINTER, DIMENSION(:) :: matrixA    ! Primera matriz
+    REAL(long), POINTER, DIMENSION(:) :: matrixB    ! Segunda matriz
+    REAL(long), POINTER, DIMENSION(:) :: matrixC    ! Matriz resultado
+    REAL(long) :: result                            ! Resultado de la suma de la matriz resultado
+    REAL(long) :: result_local                      ! Resultado de la suma local de cada proceso
+    REAL(long) :: estimation                        ! Estimacion del calculo
+    REAL(long) :: error                             ! Error encontrado
+    INTEGER :: rank                                 ! Indice de cada proceso
+    INTEGER :: process                              ! Numero total de procesos
+    INTEGER :: processSize                          ! Tamaño corregido
+    INTEGER :: ierror                               ! Error con MPI
+    INTEGER :: status(MPI_STATUS_SIZE)              ! Estado de MPI
+    INTEGER :: waste                                ! Residuo de informacion
+    INTEGER :: n_local                              ! Tamaño de informacion por proceso
+    INTEGER :: i                                    ! Iterador de procesos
  
     call MPI_INIT(ierror)
     call MPI_COMM_SIZE(MPI_COMM_WORLD, process, ierror)
     call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 
-    ! Asigna el tamaño de la matriz
+    ! Asigna la dimension de la matriz
     call OpenFile(N)
     
     ! Calcula el sobrante de datos en caso de que los procesos no sean
@@ -162,15 +162,16 @@ program matmult
 
 end program matmult
 
+! Llena las dos matrices con el valor constante
 subroutine FillMatrix(matrixA, matrixB, N)
     use precision
     use parameters
     IMPLICIT NONE
-    REAL(long), INTENT(OUT) :: matrixA(:)
-    REAL(long), INTENT(OUT) :: matrixB(:)
-    INTEGER, INTENT(IN) :: N
-    INTEGER :: i
-    INTEGER :: j
+    REAL(long), INTENT(OUT) :: matrixA(:)   ! Primera matriz
+    REAL(long), INTENT(OUT) :: matrixB(:)   ! Segunda matriz
+    INTEGER, INTENT(IN) :: N                ! Dimension de la matriz
+    INTEGER :: i                            ! Indice el renglon
+    INTEGER :: j                            ! Indice de la columna
 
     do i = 1, N, 1
         do j = 1, N, 1
@@ -181,18 +182,19 @@ subroutine FillMatrix(matrixA, matrixB, N)
 
 end subroutine FillMatrix
 
+! Multiplica las dos matrices y almacena el resultado en la matriz de resultado
 subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
     use precision
     IMPLICIT NONE
-    REAL(long), INTENT(IN) :: MatrixA(:)
-    REAL(long), INTENT(IN) :: MatrixB(:)
-    REAL(long), INTENT(OUT) :: MatrixC(:)
-    INTEGER, INTENT(IN) :: sizeX
-    INTEGER, INTENT(IN) :: sizeY
-    INTEGER :: i
-    INTEGER :: j
-    INTEGER :: k
-    REAL(long) :: result
+    REAL(long), INTENT(IN) :: MatrixA(:)    ! Primera matriz
+    REAL(long), INTENT(IN) :: MatrixB(:)    ! Segunda matriz
+    REAL(long), INTENT(OUT) :: MatrixC(:)   ! Matriz resultado
+    INTEGER, INTENT(IN) :: sizeX            ! Tamaño de renglones
+    INTEGER, INTENT(IN) :: sizeY            ! Tamaño de columnas
+    INTEGER :: i                            ! Indice del renglon
+    INTEGER :: j                            ! Indice de la columna
+    INTEGER :: k                            ! Indice de la multiplicacion
+    REAL(long) :: result                    ! Resultado de la multiplicacion
 
     do i = 1, sizeX, 1
         do j = 1, sizeY, 1
@@ -208,15 +210,16 @@ subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
 
 end subroutine Multiply
 
+! Suma todos los elementos de una matriz y regresa el resultado
 subroutine AddMatrix(matrix, Nx, Ny, result)
     use precision
     IMPLICIT NONE
-    REAL(long), INTENT(IN) :: matrix(:)
-    INTEGER, INTENT(IN) :: Nx
-    INTEGER, INTENT(IN) :: Ny
-    REAL(long), INTENT(OUT) :: result
-    INTEGER :: i
-    INTEGER :: j
+    REAL(long), INTENT(IN) :: matrix(:)     ! Matriz resultado
+    INTEGER, INTENT(IN) :: Nx               ! Tamaño de renglones
+    INTEGER, INTENT(IN) :: Ny               ! Tamaño de columnas
+    REAL(long), INTENT(OUT) :: result       ! Resultado de la suma
+    INTEGER :: i                            ! Indice del renglon
+    INTEGER :: j                            ! Indice de la columna
 
     result = 0.0_long
 
@@ -228,12 +231,13 @@ subroutine AddMatrix(matrix, Nx, Ny, result)
 
 end subroutine AddMatrix
 
+! Abre un archivo con la dimension de la matriz
 subroutine OpenFile(N)
     implicit none
-    INTEGER, INTENT(OUT) :: N
-    CHARACTER(len=30) :: input_file
+    INTEGER, INTENT(OUT) :: N               ! Dimension de la matriz
+    CHARACTER(len=30) :: input_file         ! Nombre del archivo
 
-    input_file = 'N.dat'
+    input_file = 'parameters.dat'
 
     OPEN(UNIT=1,file=input_file,ACTION="READ",STATUS='OLD')
     READ(1,*) N

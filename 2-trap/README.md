@@ -9,7 +9,6 @@
   - [Archivo parameters.dat](#archivo-parametersdat)
   - [Formato del archivo parameters.dat](#formato-del-archivo-parametersdat)
 
-
 ## Descripción
 
 Calcula la integral usando el método trapezoidal al terminar imprime la estimación del punto `a` al punto `b` usando `n` número de trapecios.
