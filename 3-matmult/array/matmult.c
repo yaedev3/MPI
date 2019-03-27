@@ -9,7 +9,7 @@ void FillMatrix(double *matrixA, double *matrixB, int N);
 void Multiply(double *matrixA, double *matrixB, double *matrixC, int N);
 double AddMatrix(double *matrix, int N);
 
-void main()
+int main(int argc, char *argv[])
 {
 	int N = 5;			   // Dimension de la matriz
 	double matrixA[N * N]; // Primera matriz
@@ -36,6 +36,8 @@ void main()
 
 	// Imprime el % de error.
 	printf("Error %.15le N = %d\n", error, N);
+
+	return 0;
 }
 
 // Llena las dos matrices con el valor constante.

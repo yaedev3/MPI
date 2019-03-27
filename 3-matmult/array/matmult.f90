@@ -1,94 +1,132 @@
+MODULE precision
+  INTEGER ,PARAMETER:: long=SELECTED_REAL_KIND(15,307) !(6,37) for real(float), (15,307) for double
+END MODULE precision
+
+MODULE parameters
+  USE precision
+  IMPLICIT NONE
+  REAL(long), PARAMETER :: a = 1.0E-10_long         ! Valor constante para llenar la matriz
+END MODULE parameters
+
 program matmult
+    use precision
+    use parameters
     implicit none
     
     INTERFACE 
-        subroutine PrintMatrix(matrix, size, name)
-            REAL, INTENT(IN) :: matrix(:)
-            INTEGER, INTENT(IN) :: size
-            CHARACTER(len=*), INTENT(IN) :: name
-        end subroutine PrintMatrix
-
-        subroutine FillMatrix(matrix, size)
-            REAL, INTENT(OUT) :: matrix(:)
-            INTEGER, INTENT(IN) :: size
+        subroutine FillMatrix(matrixA, matrixB, N)
+            use precision
+            REAL(long), INTENT(OUT) :: matrixA(:)
+            REAL(long), INTENT(OUT) :: matrixB(:)
+            INTEGER, INTENT(IN) :: N
         end subroutine FillMatrix
 
-        subroutine Multiply(MatrixA, MatrixB, MatrixC, size)
-            REAL, INTENT(IN) :: MatrixA(:)
-            REAL, INTENT(IN) :: MatrixB(:)
-            REAL, INTENT(OUT) :: MatrixC(:)
-            INTEGER, INTENT(IN) :: size
+        subroutine Multiply(MatrixA, MatrixB, MatrixC, N)
+            use precision
+            REAL(long), INTENT(IN) :: MatrixA(:)
+            REAL(long), INTENT(IN) :: MatrixB(:)
+            REAL(long), INTENT(OUT) :: MatrixC(:)
+            INTEGER, INTENT(IN) :: N
         end subroutine Multiply
 
+        subroutine AddMatrix(matrix, N, result)
+            use precision
+            REAL(long), INTENT(IN) :: matrix(:)
+            INTEGER, INTENT(IN) :: N
+            REAL(long), INTENT(OUT) :: result
+        end subroutine AddMatrix
     END INTERFACE
 
-    INTEGER, PARAMETER :: size = 2
-    REAL, DIMENSION(size * size) :: matrixA
-    REAL, DIMENSION(size * size) :: matrixB
-    REAL, DIMENSION(size * size) :: matrixC
+    INTEGER, PARAMETER :: N  = 5                        ! Dimension de la matriz
+    REAL(long), DIMENSION(N * N) :: matrixA             ! Primera matriz
+    REAL(long), DIMENSION(N * N) :: matrixB             ! Segunda matriz
+    REAL(long), DIMENSION(N * N) :: matrixC             ! Matriz resultado
+    REAL(long) :: result                                ! Resultado de la suma de la matriz resultado
+    REAL(long) :: estimation                            ! Estimacion del calculo
+    REAL(long) :: error                                 ! Error encontrado
 
-    call FillMatrix(matrixA, size)
-    call FillMatrix(matrixB, size)
 
-    call Multiply(MatrixA, MatrixB, MatrixC, size)
+    ! Llena la matriz A y B con el valor constante
+    call FillMatrix(matrixA,matrixB, N)
+    
+    ! Multiplica las matrices A y B guardando el valor en la matriz C
+    call Multiply(MatrixA, MatrixB, MatrixC, N)
+    
+    ! Calcula la suma de los valores de la matriz C
+    call AddMatrix(MatrixC, N, result)
 
-    call PrintMatrix(matrixA, size, 'Matrix A')
-    call PrintMatrix(matrixB, size, 'Matrix B')
-    call PrintMatrix(matrixC, size, 'Matrix C (result)')
+    ! Calculo estimado con la formula a^2*N^3.
+    estimation = N ** 3_long * a ** 2_long
+
+    ! Calcula el % de error
+    error = DABS(result - estimation) / estimation * 100.0_long;
+
+    ! Imprime el % de error
+    write(*, *) 'result ', error, "N = ", N
 
 end program matmult
 
-subroutine PrintMatrix(matrix, size, name)
+! Llena las dos matrices con el valor constante
+subroutine FillMatrix(matrixA, matrixB, N)
+    use precision
+    use parameters
     IMPLICIT NONE
-    REAL, INTENT(IN) :: matrix(:)
-    INTEGER, INTENT(IN) :: size
-    CHARACTER(len=*), INTENT(IN) :: name
-    INTEGER :: i
-    INTEGER :: j
+    REAL(long), INTENT(OUT) :: matrixA(:)   ! Primera matriz
+    REAL(long), INTENT(OUT) :: matrixB(:)   ! Segunda matriz
+    INTEGER, INTENT(IN) :: N                ! Dimension de la matriz
+    INTEGER :: i                            ! Indice el renglon
+    INTEGER :: j                            ! Indice de la columna
 
-    write(*, *) name
-    do i = 1, size, 1
-        do j = 1, size, 1
-            write (*,*) i, j, matrix((i - 1) * size + j) 
-        end do
-    end do
-
-end subroutine PrintMatrix
-
-subroutine FillMatrix(matrix, size)
-    IMPLICIT NONE
-    REAL, INTENT(OUT) :: matrix(:)
-    INTEGER, INTENT(IN) :: size
-    INTEGER :: i
-    INTEGER :: j
-
-    do i = 1, size, 1
-        do j = 1, size, 1
-            matrix((i - 1) * size + j)  = rand(i)
+    do i = 1, N, 1
+        do j = 1, N, 1
+            matrixA((i - 1) * N + j)  = a
+            matrixB((i - 1) * N + j)  = a
         end do
     end do
 
 end subroutine FillMatrix
 
-subroutine Multiply(MatrixA, MatrixB, MatrixC, size)
+! Multiplica las dos matrices y almacena el resultado en la matriz de resultado
+subroutine Multiply(MatrixA, MatrixB, MatrixC, N)
+    use precision
     IMPLICIT NONE
-    REAL, INTENT(IN) :: MatrixA(:)
-    REAL, INTENT(IN) :: MatrixB(:)
-    REAL, INTENT(OUT) :: MatrixC(:)
-    INTEGER, INTENT(IN) :: size
-    INTEGER :: i
-    INTEGER :: j
-    INTEGER :: k
-    REAL :: result
+    REAL(long), INTENT(IN) :: MatrixA(:)    ! Primera matriz
+    REAL(long), INTENT(IN) :: MatrixB(:)    ! Segunda matriz
+    REAL(long), INTENT(OUT) :: MatrixC(:)   ! Matriz resultado
+    INTEGER, INTENT(IN) :: N                ! Dimension de la matriz
+    INTEGER :: i                            ! Indice del renglon
+    INTEGER :: j                            ! Indice de la columna
+    INTEGER :: k                            ! Indice de la multiplicacion
+    REAL(long) :: result                    ! Resultado de la multiplicacion
 
-    do i = 1, size, 1
-        do j = 1, size, 1
+    do i = 1, N, 1
+        do j = 1, N, 1
             result = 0.0
-            do k = 1, size, 1
-                result = result + matrixA((i - 1) * size + k) * matrixB((k - 1) * size + j)
+            do k = 1, N, 1
+                result = result + matrixA((i - 1) * N + k) * matrixB((k - 1) * N + j)
             end do
-            matrixC((i - 1) * size + j) = result
+            matrixC((i - 1) * N + j) = result
         end do
     end do
 
 end subroutine Multiply
+
+! Suma todos los elementos de una matriz y regresa el resultado
+subroutine AddMatrix(matrix, N, result)
+    use precision
+    IMPLICIT NONE
+    REAL(long), INTENT(IN) :: matrix(:)     ! Matriz resultado
+    INTEGER, INTENT(IN) :: N                ! Dimension de la matriz
+    REAL(long), INTENT(OUT) :: result       ! Resultado de la suma
+    INTEGER :: i                            ! Indice del renglon
+    INTEGER :: j                            ! Indice de la columna
+
+    result = 0.0_long
+
+    do i = 1, N, 1
+        do j = 1, N, 1
+            result = result + matrix((i - 1) * N + j)
+        end do
+    end do
+
+end subroutine AddMatrix

@@ -7,6 +7,8 @@
   - [Descripción](#descripci%C3%B3n)
   - [Compilar un programa en especifico](#compilar-un-programa-en-especifico)
   - [Ejecución de un programa en especifico](#ejecuci%C3%B3n-de-un-programa-en-especifico)
+  - [Ventajas](#ventajas)
+  - [Desventajas](#desventajas)
 
 ## Descripción
 
@@ -32,4 +34,14 @@ Esta version utiliza memoria estatica por lo que es mas facil de entender e impl
 - Versión paralela MPI FORTRAN compilador libre: `mpiexec -np # ./matmult-mpi-f90.o`
 - Versión parapela CUDA c: `./matmult-cuda.o`
 
-**Notas:** # significa el número de procesadores que se quiere utilizar para ejecutar el programa. $ significa el tamaño de la matriz.
+**Notas:** # significa el número de procesadores que se quiere utilizar para ejecutar el programa.
+
+## Ventajas
+
+* Es facil de programar.
+* Los programas son mas simples y faciles de entender.
+
+## Desventajas
+
+* Se necesita compilar cada vez que se quiera cambiar el tamaño.
+* Despercidia mucha memoria en cada proceso de MPI.

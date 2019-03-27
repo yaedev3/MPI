@@ -123,7 +123,7 @@ program matmult
         error = DABS(result - estimation) / estimation * 100.0_long;
 
         ! Imprime el % de error
-        write(*, *) 'result ', error, "N = ", N
+        write(*, *) 'Error ', error, "N = ", N
 
     else 
         ! Verifica si es el ultimo proceso para calcular el reciduo

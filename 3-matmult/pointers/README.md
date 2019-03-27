@@ -7,6 +7,8 @@
   - [Descripción](#descripci%C3%B3n)
   - [Compilar un programa en especifico](#compilar-un-programa-en-especifico)
   - [Ejecución de un programa en especifico](#ejecuci%C3%B3n-de-un-programa-en-especifico)
+  - [Ventajas](#ventajas)
+  - [Desventajas](#desventajas)
 
 ## Descripción
 
@@ -33,3 +35,14 @@ Esta version utiliza memoria dinamica usando apuntadores en FORTRAN y C, por lo 
 - Versión parapela CUDA c: `./matmult-cuda.o $`
 
 **Notas:** # significa el número de procesadores que se quiere utilizar para ejecutar el programa. $ significa el tamaño de la matriz.
+
+## Ventajas
+
+* El tamaño es variable por lo que se puede definir en un archivo por separado.
+* Maneja mejor la memoria de la computadora.
+* Se compila una vez y ya no se tiene que volver a compilar.
+
+## Desventajas
+
+* Es mas complejo de programar.
+* Los programas son mas extensos.

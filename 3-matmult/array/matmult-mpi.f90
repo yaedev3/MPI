@@ -1,137 +1,162 @@
+MODULE precision
+  INTEGER ,PARAMETER:: long=SELECTED_REAL_KIND(15,307) !(6,37) for real(float), (15,307) for double
+END MODULE precision
+
+MODULE parameters
+  USE precision
+  IMPLICIT NONE
+  REAL(long), PARAMETER :: a = 1.0E-10_long         ! Valor constante para llenar la matriz
+END MODULE parameters   
+
 program matmult
+    use precision
+    use parameters
     implicit none
     include 'mpif.h'
-
+    
     INTERFACE 
-    subroutine PrintMatrix(matrix, size, name)
-        REAL, INTENT(IN) :: matrix(:)
-        INTEGER, INTENT(IN) :: size
-        CHARACTER(len=*), INTENT(IN) :: name
-    end subroutine PrintMatrix
-
-        subroutine FillMatrix(array, size)
-            REAL, INTENT(OUT) :: array(:)
-            INTEGER, INTENT(IN) :: size
+        subroutine FillMatrix(matrixA, matrixB, N)
+            use precision
+            REAL(long), INTENT(OUT) :: matrixA(:)
+            REAL(long), INTENT(OUT) :: matrixB(:)
+            INTEGER, INTENT(IN) :: N
         end subroutine FillMatrix
 
         subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
-            REAL, INTENT(IN) :: MatrixA(:)
-            REAL, INTENT(IN) :: MatrixB(:)
-            REAL, INTENT(OUT) :: MatrixC(:)
+            use precision
+            REAL(long), INTENT(IN) :: MatrixA(:)
+            REAL(long), INTENT(IN) :: MatrixB(:)
+            REAL(long), INTENT(OUT) :: MatrixC(:)
             INTEGER, INTENT(IN) :: sizeX
             INTEGER, INTENT(IN) :: sizeY
         end subroutine Multiply
 
+        subroutine AddMatrix(matrix, Nx, Ny, result)
+            use precision
+            REAL(long), INTENT(IN) :: matrix(:)
+            INTEGER, INTENT(IN) :: Nx
+            INTEGER, INTENT(IN) :: Ny
+            REAL(long), INTENT(OUT) :: result
+        end subroutine AddMatrix
     END INTERFACE
 
-    INTEGER, PARAMETER :: size = 5
-    REAL, DIMENSION(size * size) :: matrixA
-    REAL, DIMENSION(size * size) :: matrixB
-    REAL, DIMENSION(size * size) :: matrixC
-    INTEGER :: rank 
-    INTEGER :: process
-    INTEGER :: processSize
-    INTEGER :: ierror
-    INTEGER :: status(MPI_STATUS_SIZE)
-    INTEGER :: waste
-    INTEGER :: n
-    INTEGER :: i
-
+    INTEGER, PARAMETER :: N  = 5                    ! Dimension de la matriz
+    REAL(long), DIMENSION(N * N) :: matrixA         ! Primera matriz
+    REAL(long), DIMENSION(N * N) :: matrixB         ! Segunda matriz
+    REAL(long), DIMENSION(N * N) :: matrixC         ! Matriz resultado
+    REAL(long) :: result                            ! Resultado de la suma de la matriz resultado
+    REAL(long) :: result_local                      ! Resultado de la suma local de cada proceso
+    REAL(long) :: estimation                        ! Estimacion del calculo
+    REAL(long) :: error                             ! Error encontrado
+    INTEGER :: rank                                 ! Indice de cada proceso
+    INTEGER :: process                              ! Numero total de procesos
+    INTEGER :: processSize                          ! Tamaño corregido
+    INTEGER :: ierror                               ! Error con MPI
+    INTEGER :: status(MPI_STATUS_SIZE)              ! Estado de MPI
+    INTEGER :: waste                                ! Residuo de informacion
+    INTEGER :: n_local                              ! Tamaño de informacion por proceso
+    INTEGER :: i                                    ! Iterador de procesos
+ 
     call MPI_INIT(ierror)
     call MPI_COMM_SIZE(MPI_COMM_WORLD, process, ierror)
     call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 
-    waste = mod(size, process - 1)
-    n = size / (process - 1)
+    ! Calcula el sobrante de datos en caso de que los procesos no sean
+    ! multiplos de la informacion
+    waste = mod(N, process - 1)
+
+    ! Calcula el numero de datos que va a tomar cada proceso
+    n_local = N / (process - 1)
 
     if (rank == 0) then
+        ! Inicializa el resultado en 0.0
+        result = 0.0_long
 
-        call FillMatrix(matrixA, size)
-        call FillMatrix(matrixB, size)
+        ! Llena la matriz A y B con el valor constante
+        call FillMatrix(matrixA, matrixB, N)
 
     end if
 
-    call MPI_BCAST(matrixA, size * size, MPI_REAL, 0, MPI_COMM_WORLD, ierror)
-    call MPI_BCAST(matrixB, size * size, MPI_REAL, 0, MPI_COMM_WORLD, ierror)
+    ! Comparte la informacion de las matrices A y B con los demas procesos
+    call MPI_BCAST(matrixA, N * N, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror)
+    call MPI_BCAST(matrixB, N * N, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror)
 
     if (rank == 0) then
-        
-        processSize = n
 
+        ! Recibe el resultado de la suma de todos los elementos de la matriz C
         do i = 1, process - 1, 1
 
-            if (i == process - 1) then
-                processSize = waste + n
-            end if
-
-            call MPI_RECV(matrixC((i - 1) * size * n + 1), processSize * size, MPI_REAL, i, 0, MPI_COMM_WORLD, status, ierror)
+            call MPI_RECV(result_local, 1, MPI_DOUBLE, i, 1, MPI_COMM_WORLD, status, ierror)
+            result = result + result_local
 
         end do
 
-        call PrintMatrix(matrixA, size, 'Matrix A')
-        call PrintMatrix(matrixB, size, 'Matrix B')
-        call PrintMatrix(matrixC, size, 'Matrix C (result)')
+        ! Calculo estimado con la formula a^2*N^3.
+        estimation = N ** 3_long * a ** 2_long
+
+        ! Calcula el % de error
+        error = DABS(result - estimation) / estimation * 100.0_long
+
+        ! Imprime el % de error
+        write(*, *) 'error ', error, "N = ", N
 
     else 
-
+        ! Verifica si es el ultimo proceso para calcular el reciduo
         if (rank == process - 1) then
-            processSize = waste + n;
+            processSize = waste + n_local;
         else
-            processSize = n;
+            processSize = n_local;
         end if
 
-        call Multiply(matrixA, matrixB, matrixC, processSize, size)
-        call MPI_SEND(matrixC, processSize * size, MPI_REAL, 0, 0, MPI_COMM_WORLD, ierror)
+        ! Hace la multiplicacion de matrices.
+        call Multiply(matrixA, matrixB, matrixC, processSize, N)
+
+        ! Hace la suma de todos los elementos de la matriz C
+        call AddMatrix(MatrixC, processSize, N, result_local)
+
+        ! Envia el resultado de la multiplicacion al proceso 0.
+        call MPI_SEND(result_local, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, ierror)
 
     end if
 
+    ! Termina MPI
     call MPI_FINALIZE(ierror)
 
 end program matmult
 
-subroutine PrintMatrix(matrix, size, name)
+! Llena las dos matrices con el valor constante
+subroutine FillMatrix(matrixA, matrixB, N)
+    use precision
+    use parameters
     IMPLICIT NONE
-    REAL, INTENT(IN) :: matrix(:)
-    INTEGER, INTENT(IN) :: size
-    CHARACTER(len=*), INTENT(IN) :: name
-    INTEGER :: i
-    INTEGER :: j
+    REAL(long), INTENT(OUT) :: matrixA(:)   ! Primera matriz
+    REAL(long), INTENT(OUT) :: matrixB(:)   ! Segunda matriz
+    INTEGER, INTENT(IN) :: N                ! Dimension de la matriz
+    INTEGER :: i                            ! Indice el renglon
+    INTEGER :: j                            ! Indice de la columna
 
-    write(*, *) name
-    do i = 1, size, 1
-        do j = 1, size, 1
-            write (*,*) i, j, matrix((i - 1) * size + j) 
-        end do
-    end do
-
-end subroutine PrintMatrix
-
-subroutine FillMatrix(matrix, size)
-    IMPLICIT NONE
-    REAL, INTENT(OUT) :: matrix(:)
-    INTEGER, INTENT(IN) :: size
-    INTEGER :: i
-    INTEGER :: j
-
-    do i = 1, size, 1
-        do j = 1, size, 1
-            matrix((i - 1) * size + j)  = 1
+    do i = 1, N, 1
+        do j = 1, N, 1
+            matrixA((i - 1) * N + j)  = a
+            matrixB((i - 1) * N + j)  = a
         end do
     end do
 
 end subroutine FillMatrix
 
+! Multiplica las dos matrices y almacena el resultado en la matriz de resultado
 subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
+    use precision
     IMPLICIT NONE
-    REAL, INTENT(IN) :: MatrixA(:)
-    REAL, INTENT(IN) :: MatrixB(:)
-    REAL, INTENT(OUT) :: MatrixC(:)
-    INTEGER, INTENT(IN) :: sizeX
-    INTEGER, INTENT(IN) :: sizeY
-    INTEGER :: i
-    INTEGER :: j
-    INTEGER :: k
-    REAL :: result
+    REAL(long), INTENT(IN) :: MatrixA(:)    ! Primera matriz
+    REAL(long), INTENT(IN) :: MatrixB(:)    ! Segunda matriz
+    REAL(long), INTENT(OUT) :: MatrixC(:)   ! Matriz resultado
+    INTEGER, INTENT(IN) :: sizeX            ! Tamaño de renglones
+    INTEGER, INTENT(IN) :: sizeY            ! Tamaño de columnas
+    INTEGER :: i                            ! Indice del renglon
+    INTEGER :: j                            ! Indice de la columna
+    INTEGER :: k                            ! Indice de la multiplicacion
+    REAL(long) :: result                    ! Resultado de la multiplicacion
 
     do i = 1, sizeX, 1
         do j = 1, sizeY, 1
@@ -146,3 +171,24 @@ subroutine Multiply(MatrixA, MatrixB, MatrixC, sizeX, sizeY)
     end do
 
 end subroutine Multiply
+
+! Suma todos los elementos de una matriz y regresa el resultado
+subroutine AddMatrix(matrix, Nx, Ny, result)
+    use precision
+    IMPLICIT NONE
+    REAL(long), INTENT(IN) :: matrix(:)     ! Matriz resultado
+    INTEGER, INTENT(IN) :: Nx               ! Tamaño de renglones
+    INTEGER, INTENT(IN) :: Ny               ! Tamaño de columnas
+    REAL(long), INTENT(OUT) :: result       ! Resultado de la suma
+    INTEGER :: i                            ! Indice del renglon
+    INTEGER :: j                            ! Indice de la columna
+
+    result = 0.0_long
+
+    do i = 1, Nx, 1
+        do j = 1, Ny, 1
+            result = result + matrix((i - 1) * Nx + j + 1)
+        end do
+    end do
+
+end subroutine AddMatrix

@@ -17,7 +17,7 @@ case "$1" in
     ;;
     "-mc")
         echo "MPI C program $2 threads"
-        mpicc -o out/matmult-mpi-c.o matmult-mpi.c
+        mpicc -o out/matmult-mpi-c.o matmult-mpi.c -lm
         mpiexec -np $2 ./out/matmult-mpi-c.o
     ;;
     "-mf")
