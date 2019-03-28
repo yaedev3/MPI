@@ -40,7 +40,7 @@ program matmult
         end subroutine AddMatrix
     END INTERFACE
 
-    INTEGER, PARAMETER :: N  = 5                    ! Dimension de la matriz
+    INTEGER, PARAMETER :: N  = 36                   ! Dimension de la matriz
     REAL(long), DIMENSION(N * N) :: matrixA         ! Primera matriz
     REAL(long), DIMENSION(N * N) :: matrixB         ! Segunda matriz
     REAL(long), DIMENSION(N * N) :: matrixC         ! Matriz resultado
