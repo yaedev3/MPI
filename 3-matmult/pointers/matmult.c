@@ -8,6 +8,7 @@ static double a = 1.0E-10;
 void FillMatrix(double *matrixA, double *matrixB, int N);
 void Multiply(double *matrixA, double *matrixB, double *matrixC, int N);
 double AddMatrix(double *matrix, int N);
+void OpenFile(int *N);
 
 int main(int argc, char *argv[])
 {
@@ -19,15 +20,8 @@ int main(int argc, char *argv[])
     double estimation; // Estimacion del calculo
     double error;      // Error encontrado
 
-    // Verifica si tiene los argumentos necesarios para inicializa el tamaño de las matrices
-    if (argc < 2)
-    {
-        printf("Falta el argumento del tamaño\n");
-        return -1;
-    }
-
     // Asigna la dimension de la matriz
-    sscanf(argv[1], "%d", &N);
+    OpenFile(&N);
 
     // Reserva la memoria para las tres matrices
     matrixA = (double *)malloc(sizeof(double) * N * N);
@@ -40,10 +34,10 @@ int main(int argc, char *argv[])
     // Multiplica las matrices A y B guardando el valor en la matriz C
     Multiply(matrixA, matrixB, matrixC, N);
 
-    //Calcula la suma de los valores de la matriz C.
+    //Calcula la suma de los valores de la matriz C
     result = AddMatrix(matrixC, N);
 
-    // Calculo estimado con la formula a^2*N^3.
+    // Calculo estimado con la formula a^2*N^3
     estimation = pow(N, 3) * pow(a, 2);
 
     // Calcula el % de error.
@@ -60,7 +54,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// Llena las dos matrices con el valor constante.
+// Llena las dos matrices con el valor constante
 void FillMatrix(
     double *matrixA, // Primera matriz
     double *matrixB, // Segunda matriz
@@ -118,4 +112,22 @@ double AddMatrix(
             result += matrix[(i * N) + j];
 
     return result;
+}
+
+// Abre un archivo con la dimension de la matriz
+void OpenFile(
+    int *N // Dimension de la matriz
+)
+{
+    FILE *file;
+
+    file = fopen("parameters.dat", "r");
+
+    if (file == NULL)
+        printf("No se puede abrir el archivo.\n");
+    else
+    {
+        fscanf(file, "%ld", N);
+        fclose(file);
+    }
 }

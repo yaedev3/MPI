@@ -9,6 +9,7 @@ static double a = 1.0E-10;
 void FillMatrix(double *matrixA, double *matrixB, int N);
 void Multiply(double *matrixA, double *matrixB, double *matrixC, int Nx, int Ny);
 double AddMatrix(double *matrix, int Nx, int Ny);
+void OpenFile(int *N);
 
 int main(int argc, char *argv[])
 {
@@ -31,15 +32,14 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &proccess);
 
-    // Verifica si tiene los argumentos necesarios para inicializa el tamaño de las matrices
-    if (argc < 2)
+    if (rank == 0)
     {
-        printf("Falta el argumento del tamaño\n");
-        return -1;
+        // Asigna la dimension de la matriz
+        OpenFile(&N);
     }
 
-    // Asigna la dimension de la matriz
-    sscanf(argv[1], "%d", &N);
+    // Comparte la dimension de la matriz
+    MPI_Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     // Calcula el sobrante de datos en caso de que los procesos no sean
     // multiplos de la informacion
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
         FillMatrix(matrixA, matrixB, N);
     }
 
-    // Comparte la informacion de la matriz B con los demas procesos.
+    // Comparte la informacion de la matriz B con los demas procesos
     MPI_Bcast(matrixB, N * N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (rank == 0)
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 
     // Termina MPI
     MPI_Finalize();
-    
+
     return 0;
 }
 
@@ -191,4 +191,22 @@ double AddMatrix(
             result += matrix[(i * Nx) + j];
 
     return result;
+}
+
+// Abre un archivo con la dimension de la matriz
+void OpenFile(
+    int *N // Dimension de la matriz
+)
+{
+    FILE *file;
+
+    file = fopen("parameters.dat", "r");
+
+    if (file == NULL)
+        printf("No se puede abrir el archivo.\n");
+    else
+    {
+        fscanf(file, "%ld", N);
+        fclose(file);
+    }
 }

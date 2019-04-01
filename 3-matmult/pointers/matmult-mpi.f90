@@ -65,8 +65,15 @@ program matmult
     call MPI_COMM_SIZE(MPI_COMM_WORLD, process, ierror)
     call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 
-    ! Asigna la dimension de la matriz
-    call OpenFile(N)
+    if (rank == 0) then
+
+        ! Asigna la dimension de la matriz
+        call OpenFile(N)
+        
+    end if
+
+    ! Comparte la dimension de la matriz
+    call MPI_BCAST(N, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror)
     
     ! Calcula el sobrante de datos en caso de que los procesos no sean
     ! multiplos de la informacion
@@ -91,7 +98,7 @@ program matmult
 
     end if
 
-    ! Comparte la informacion de la matriz B con los demas procesos.
+    ! Comparte la informacion de la matriz B con los demas procesos
     call MPI_BCAST(matrixB, N * N, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror)
 
     if (rank == 0) then
@@ -116,7 +123,7 @@ program matmult
 
         end do
 
-        ! Calculo estimado con la formula a^2*N^3.
+        ! Calculo estimado con la formula a^2*N^3
         estimation = N ** 3_long * a ** 2_long
 
         ! Calcula el % de error
@@ -133,7 +140,7 @@ program matmult
             processSize = n_local;
         end if
 
-        ! Inicializa las matrices A y C con los tamaños correspondientes a cada proceso.
+        ! Inicializa las matrices A y C con los tamaños correspondientes a cada proceso
         allocate(matrixA(N * processSize))
         allocate(matrixC(N * processSize))
 
@@ -146,7 +153,7 @@ program matmult
         ! Hace la suma de todos los elementos de la matriz C
         call AddMatrix(MatrixC, processSize, N, result_local)
 
-        ! Envia el resultado de la multiplicacion al proceso 0.
+        ! Envia el resultado de la multiplicacion al proceso 0
         call MPI_SEND(result_local, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, ierror)
 
         ! Libera la memoria de la matriz C
@@ -235,11 +242,8 @@ end subroutine AddMatrix
 subroutine OpenFile(N)
     implicit none
     INTEGER, INTENT(OUT) :: N               ! Dimension de la matriz
-    CHARACTER(len=30) :: input_file         ! Nombre del archivo
 
-    input_file = 'parameters.dat'
-
-    OPEN(UNIT=1,file=input_file,ACTION="READ",STATUS='OLD')
+    OPEN(UNIT=1,file='parameters.dat',ACTION="READ",STATUS='OLD')
     READ(1,*) N
     CLOSE(1)
 

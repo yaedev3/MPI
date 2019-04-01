@@ -151,11 +151,8 @@ end subroutine AddMatrix
 subroutine OpenFile(N)
     implicit none
     INTEGER, INTENT(OUT) :: N               ! Dimension de la matriz
-    CHARACTER(len=30) :: input_file         ! Nombre del archivo
 
-    input_file = 'parameters.dat'
-
-    OPEN(UNIT=1,file=input_file,ACTION="READ",STATUS='OLD')
+    OPEN(UNIT=1,file='parameters.dat',ACTION="READ",STATUS='OLD')
     READ(1,*) N
     CLOSE(1)
 
