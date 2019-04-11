@@ -9,6 +9,7 @@
   - [Ejecución de un programa en especifico](#ejecuci%C3%B3n-de-un-programa-en-especifico)
   - [Ventajas](#ventajas)
   - [Desventajas](#desventajas)
+  - [Formato de archivos de salida](#formato-de-archivos-de-salida)
 
 ## Descripción
 
@@ -46,3 +47,8 @@ Esta version utiliza memoria dinamica usando apuntadores en FORTRAN y C, por lo 
 
 * Es mas complejo de programar.
 * Los programas son mas extensos.
+
+## Formato de archivos de salida
+
+* Versión serial en c: `serial-c-N-Dia-Hora-Minutos-Segundos.txt`
+* Versión paralela MPI c: `mpi-c-Procesos-N-Dia-Hora-Minutos-Segundos.txt`

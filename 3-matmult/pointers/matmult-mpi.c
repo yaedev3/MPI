@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "mpi.h"
 #include <math.h>
+#include <time.h>
 
 // Valor constante para llenar la matriz
 static double a = 1.0E-10;
@@ -10,6 +11,7 @@ void FillMatrix(double *matrixA, double *matrixB, int N);
 void Multiply(double *matrixA, double *matrixB, double *matrixC, int Nx, int Ny);
 double AddMatrix(double *matrix, int Nx, int Ny);
 void OpenFile(int *N);
+void SaveFile(struct tm *start, struct tm *end, double error, double elapsed, int N, int process);
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +29,12 @@ int main(int argc, char *argv[])
     double result_local; // Resultado de la suma local de cada proceso
     double estimation;   // Estimacion del calculo
     double error;        // Error encontrado
+    double elapsed;      // Tiempo que tomo ejecutarse el programa
+    time_t t;            // Variable de tiempo
+    struct tm *start;    // Hora de inicio
+    struct tm *end;      // Hora de termino
+    clock_t start_clock; // Tiempo de inicio
+    clock_t stop_clock;  // Tiempo de termino
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -34,6 +42,13 @@ int main(int argc, char *argv[])
 
     if (rank == 0)
     {
+        // Inicia la variable de tiempo
+        t = time(NULL);
+
+        // Establece la hora de inicio
+        start = localtime(&t);
+        start_clock = clock();
+
         // Asigna la dimension de la matriz
         OpenFile(&N);
     }
@@ -89,9 +104,6 @@ int main(int argc, char *argv[])
 
         // Calcula el % de error.
         error = fabs(result - estimation) / estimation * 100.0;
-
-        // Imprime el % de error.
-        printf("Error %.15le N = %d\n", error, N);
     }
     else
     {
@@ -124,6 +136,19 @@ int main(int argc, char *argv[])
     // Libera la memoria de las matrices A y B
     free(matrixA);
     free(matrixB);
+
+    if (rank == 0)
+    {
+        // Establece la hora en que termino de calcular
+        end = localtime(&t);
+        stop_clock = clock();
+
+        // Calcula el tiempo que tomo ejecutar el programa
+        elapsed = (double)(stop_clock - start_clock) / CLOCKS_PER_SEC;
+
+        // Guarda el resultado en un archivo
+        SaveFile(start, end, error, elapsed, N, proccess);
+    }
 
     // Termina MPI
     MPI_Finalize();
@@ -206,7 +231,39 @@ void OpenFile(
         printf("No se puede abrir el archivo.\n");
     else
     {
-        fscanf(file, "%ld", N);
+        fscanf(file, "%d", N);
         fclose(file);
     }
+}
+
+// Crea un archivo de salida con la hora de inicio, de termino y el tiempo que tomo correr el programa
+// Asi como el porcentaje de error
+void SaveFile(
+    struct tm *start, // Hora de inicio
+    struct tm *end,   // Hora de termino
+    double error,     // Porcentaje de error
+    double elapsed,   // Tiempo que paso
+    int N,            // Dimension de la matriz
+    int process       // Total de hilos en MPI
+)
+{
+    FILE *file;
+    char file_name[64];
+    char output[50];
+
+    sprintf(file_name, "mpi-c-%d-%d-%d-%d-%d-%d.txt", process, N, end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
+
+    file = fopen(file_name, "w+");
+
+    strftime(output, sizeof(output), "%c", start);
+    fprintf(file, "Hora de inicio\n%s\n", output);
+
+    strftime(output, sizeof(output), "%c", end);
+    fprintf(file, "Hora de termino\n%s\n", output);
+
+    fprintf(file, "Tiempo de ejecucion\n%.15lf\n", elapsed);
+
+    fprintf(file, "Error\n%.15le\n", error);
+
+    fclose(file);
 }

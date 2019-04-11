@@ -18,6 +18,9 @@
 # Script to copy something to server
 *.sh
 
+# Text files
+*.txt
+
 # Folder out
 out*
 */out
