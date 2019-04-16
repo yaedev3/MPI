@@ -8,11 +8,11 @@ fi
 case "$1" in
     
     "-c")
-        gcc -o out/trap-c.o trap.c
+        icc -O3 -o out/trap-icc.o trap-icc.c -lm || gcc -o out/trap-c.o trap.c -lm
         ./out/trap-c.o
     ;;
     "-f")
-        ifort -o out/trap-f90.o trap.f90 || gfortran -o out/trap-f90.o trap.f90
+        ifort -O3 -o out/trap-f90.o trap.f90 || gfortran -o out/trap-f90.o trap.f90
         ./out/trap-f90.o
     ;;
     "-mc")

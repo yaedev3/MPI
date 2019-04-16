@@ -15,28 +15,60 @@
  */
 
 #include <stdio.h>
+#include <math.h>
+#include <time.h>
 
-double Trap(double a, double b, int n, double h);
-void OpenFile(double *a, double *b, int *n);
+double Trap(double a, double b, long n, double h);
+void OpenFile(double *a, double *b, long *n);
+void SaveFile(struct tm *start, struct tm *end, double error, double elapsed, long N);
 
 int main(void)
 {
-    double integral; /* Store result in integral */
-    double a;        /* Left endpoints */
-    double b;        /* Right endpoints */
-    double h;        /* Height of trapezoids */
-    int n;           /* Number of trapezoids */
+    double integral;     /* Store result in integral */
+    double a;            /* Left endpoints */
+    double b;            /* Right endpoints */
+    double h;            /* Height of trapezoids */
+    long n;              /* Number of trapezoids */
+    double estimation;   // Estimacion del calculo
+    double error;        // Error encontrado
+    double elapsed;      // Tiempo que tomo ejecutarse el programa
+    time_t t;            // Variable de tiempo
+    struct tm *start;    // Hora de inicio
+    struct tm *end;      // Hora de termino
+    clock_t start_clock; // Tiempo de inicio
+    clock_t stop_clock;  // Tiempo de termino
 
+    // Inicia la variable de tiempo
+    t = time(NULL);
+
+    // Establece la hora de inicio
+    start = localtime(&t);
+    start_clock = clock();
+
+    //
     OpenFile(&a, &b, &n);
 
     h = (b - a) / n;
     integral = Trap(a, b, n, h);
 
-    printf("With n = %d trapezoids, our estimate\n", n);
-    printf("of the integral from %f to %f = %.15le\n", a, b, integral);
+    // Estimacion del resultado
+    estimation = 9.0;
+
+    // Calcula el porcentaje de error.
+    error = fabs(integral - estimation) / estimation * 100.0;
+
+    // Establece la hora en que termino de calcular
+    end = localtime(&t);
+    stop_clock = clock();
+
+    // Calcula el tiempo que tomo ejecutar el programa
+    elapsed = (double)(stop_clock - start_clock) / CLOCKS_PER_SEC;
+
+    // Guarda el resultado en un archivo
+    SaveFile(start, end, error, elapsed, n);
 
     return 0;
-} /* main */
+}
 
 /*------------------------------------------------------------------
  * Function:    Trap
@@ -45,25 +77,22 @@ int main(void)
  * Input args:  a, b, n, h
  * Return val:  Estimate of the integral 
  */
-double Trap(double a, double b, int n, double h)
+double Trap(double a, double b, long n, double h)
 {
     double integral;
-    int k;
+    long k;
 
     integral = (a * a + b * b) / 2.0;
 
     for (k = 1; k <= n - 1; k++)
-    {
         integral += (a + k * h) * (a + k * h);
-        //        printf("Calculado %lf total %lf\n", (a + k * h) * (a + k * h), integral);
-    }
 
     integral = integral * h;
 
     return integral;
 }
 
-void OpenFile(double *a, double *b, int *n)
+void OpenFile(double *a, double *b, long *n)
 {
     FILE *file;
     char *input_file;
@@ -80,7 +109,38 @@ void OpenFile(double *a, double *b, int *n)
         *n = 1024;
     }
     else
-        fscanf(file, "%lf %lf %d", a, b, n);
+        fscanf(file, "%lf %lf %ld", a, b, n);
+
+    fclose(file);
+}
+
+// Crea un archivo de salida con la hora de inicio, de termino y el tiempo que tomo correr el programa
+// Asi como el porcentaje de error
+void SaveFile(
+    struct tm *start, // Hora de inicio
+    struct tm *end,   // Hora de termino
+    double error,     // Porcentaje de error
+    double elapsed,   // Tiempo que paso
+    long N             // Dimension de la matriz
+)
+{
+    FILE *file;
+    char file_name[64];
+    char output[50];
+
+    sprintf(file_name, "serial-c-%ld-%d-%d-%d-%d.txt", N, end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
+
+    file = fopen(file_name, "w+");
+
+    strftime(output, sizeof(output), "%c", start);
+    fprintf(file, "Hora de inicio\n%s\n", output);
+
+    strftime(output, sizeof(output), "%c", end);
+    fprintf(file, "Hora de termino\n%s\n", output);
+
+    fprintf(file, "Tiempo de ejecucion\n%.15lf\n", elapsed);
+
+    fprintf(file, "Error\n%.15le\n", error);
 
     fclose(file);
 }
