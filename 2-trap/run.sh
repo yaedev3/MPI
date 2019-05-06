@@ -17,7 +17,7 @@ case "$1" in
     ;;
     "-mc")
         echo "MPI C program $2 threads"
-        mpicc -o out/trap-mpi-c.o trap-mpi.c
+        mpicc -o out/trap-mpi-c.o trap-mpi.c -lm
         mpiexec -np $2 ./out/trap-mpi-c.o
     ;;
     "-mf")

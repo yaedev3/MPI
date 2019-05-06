@@ -12,7 +12,7 @@ case "$1" in
         ./out/matmult-c.o
     ;;
     "-f")
-        ifort -o out/matmult-f90.o matmult.f90 || gfortran -o out/matmult-f90.o matmult.f90
+        ifort -O3 -o out/matmult-f90.o matmult.f90 || gfortran -o out/matmult-f90.o matmult.f90
         ./out/matmult-f90.o
     ;;
     "-mc")

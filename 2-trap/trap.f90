@@ -134,17 +134,10 @@ subroutine OpenFile(a, b, n)
     input_file = 'parameters.dat'
 
     OPEN(UNIT=1,file=input_file,ACTION="READ",IOSTAT=stat,STATUS='OLD')
-    if (stat .ne. 0) then
-        a = 0.0_long
-        b = 3.0_long
-        n = 1024
-        write(*, *) 'No se encontro el archivo \"parameters.dat\" se usaran parametros por defecto.'
-    else 
-        READ(1, *) a
-        READ(1, *) b
-        READ(1,*) n
-    end if
-
+    READ(1, *) a
+    READ(1, *) b
+    READ(1,*) n
+ 
     CLOSE(1)
 
 end subroutine OpenFile

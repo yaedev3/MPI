@@ -22,7 +22,7 @@ double Trap(double a, double b, long n, double h);
 void OpenFile(double *a, double *b, long *n);
 void SaveFile(struct tm *start, struct tm *end, double error, double elapsed, long N);
 
-int main(void)
+int main(int argc, char *argv[])
 {
     double integral;     /* Store result in integral */
     double a;            /* Left endpoints */
@@ -121,7 +121,7 @@ void SaveFile(
     struct tm *end,   // Hora de termino
     double error,     // Porcentaje de error
     double elapsed,   // Tiempo que paso
-    long N             // Dimension de la matriz
+    long N            // Dimension de la matriz
 )
 {
     FILE *file;

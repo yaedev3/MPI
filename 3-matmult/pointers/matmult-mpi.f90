@@ -8,9 +8,34 @@ MODULE parameters
   REAL(long), PARAMETER :: a = 1.0E-10_long         ! Valor constante para llenar la matriz
 END MODULE parameters   
 
+module time_ftcs
+    contains
+      function timestamp() result(str)
+        implicit none
+        character(len=20)                     :: str
+        integer                               :: values(8)
+        character(len=4)                      :: year
+        character(len=2)                      :: month
+        character(len=2)                      :: day, hour, minute, second
+        character(len=5)                      :: zone
+    
+        ! Get current time
+        call date_and_time(VALUES=values, ZONE=zone)  
+        write(year,'(i4.4)')    values(1)
+        write(month,'(i2.2)')   values(2)
+        write(day,'(i2.2)')     values(3)
+        write(hour,'(i2.2)')    values(5)
+        write(minute,'(i2.2)')  values(6)
+        write(second,'(i2.2)')  values(7)
+    
+        str = day//'-'//hour//'-'//minute//'-'//second
+      end function timestamp
+end module
+
 program matmult
     use precision
     use parameters
+    use time_ftcs
     implicit none
     include 'mpif.h'
     
@@ -60,12 +85,21 @@ program matmult
     INTEGER :: waste                                ! Residuo de informacion
     INTEGER :: n_local                              ! Tamaño de informacion por proceso
     INTEGER :: i                                    ! Iterador de procesos
+    REAL(long) :: elapsed                           ! Tiempo que tomo ejecutarse el programa
+    REAL(long) :: start_clock                       ! Tiempo de inicio
+    REAL(long) :: stop_clock                        ! Tiempo de termino
+    CHARACTER(len=38) :: start                      ! Hora de inicio
+    CHARACTER(len=38) :: end                        ! Hora de termino
  
     call MPI_INIT(ierror)
     call MPI_COMM_SIZE(MPI_COMM_WORLD, process, ierror)
     call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 
     if (rank == 0) then
+
+        ! Establece la hora de inicio
+        start = timestamp()
+        call CPU_TIME(start_clock)
 
         ! Asigna la dimension de la matriz
         call OpenFile(N)
@@ -129,9 +163,6 @@ program matmult
         ! Calcula el % de error
         error = DABS(result - estimation) / estimation * 100.0_long;
 
-        ! Imprime el % de error
-        write(*, *) 'result ', error, "N = ", N
-
     else 
         ! Verifica si es el ultimo proceso para calcular el reciduo
         if (rank == process - 1) then
@@ -164,6 +195,20 @@ program matmult
     ! Libera la memoria de las matrices A y B
     deallocate(matrixA)
     deallocate(matrixB)
+
+    if (rank == 0) then
+
+        ! Establece la hora en que termino de calcular
+        end = timestamp()
+        call CPU_TIME(stop_clock)
+        
+        ! Calcula el tiempo que tomo ejecutar el programa
+        elapsed =  stop_clock - start_clock
+
+        ! Guarda el resultado en un archivo
+        call SaveFile(start, end, error, elapsed, N, process)
+
+    end if
 
     call MPI_FINALIZE(ierror)
 
@@ -248,3 +293,35 @@ subroutine OpenFile(N)
     CLOSE(1)
 
 end subroutine OpenFile
+
+! Crea un archivo de salida con la hora de inicio, de termino y el tiempo que tomo correr el programa
+! Asi como el porcentaje de error
+subroutine SaveFile(start, end, error, elapsed, N, process)
+    use precision
+    CHARACTER(len=38), INTENT(IN) :: start
+    CHARACTER(len=38), INTENT(IN) :: end
+    REAL(long), INTENT(IN) :: error
+    REAL(long), INTENT(IN) :: elapsed
+    INTEGER, INTENT(IN) :: N
+    INTEGER, INTENT(IN) :: process
+    CHARACTER(len = 54) :: file_name
+    CHARACTER(len = 4) :: Nstring
+    CHARACTER(len = 1) :: processString
+
+    write(Nstring, "(I4)") N 
+    write(processString, "(I1)") process
+
+    file_name = 'mpi-f90-'//processString//'-'//Nstring//'-'//trim(end)//'.txt'
+    
+    open (unit=10,file=file_name)
+    write(10,*) 'Hora de inicio'
+    write(10,*) start
+    write(10,*) 'Hora de termino'
+    write(10,*) end
+    write(10,*) 'Tiempo de ejecucion'
+    write(10,*) elapsed
+    write(10,*) 'Error'
+    write(10,*) error
+    close(10)
+
+end subroutine SaveFile
