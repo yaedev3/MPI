@@ -2,8 +2,35 @@ MODULE precision
   INTEGER ,PARAMETER:: long=SELECTED_REAL_KIND(15,307) !(6,37) for real(float), (15,307) for double
 END MODULE precision
 
+module time_ftcs
+    contains
+      function timestamp() result(str)
+        implicit none
+        character(len=20)                     :: str
+        integer                               :: values(8)
+        character(len=4)                      :: year
+        character(len=2)                      :: month
+        character(len=2)                      :: day, hour, minute, second
+        character(len=5)                      :: zone
+    
+        ! Get current time
+        call date_and_time(VALUES=values, ZONE=zone)  
+        write(year,'(i4.4)')    values(1)
+        write(month,'(i2.2)')   values(2)
+        write(day,'(i2.2)')     values(3)
+        write(hour,'(i2.2)')    values(5)
+        write(minute,'(i2.2)')  values(6)
+        write(second,'(i2.2)')  values(7)
+    
+        str = day//'-'//hour//'-'//minute//'-'//second
+      end function timestamp
+end module
+
+
 program main
     use precision
+    use time_ftcs
+    use iso_fortran_env
     implicit none
     include 'mpif.h'
     
@@ -12,6 +39,7 @@ program main
 
        SUBROUTINE Trap(left_endpt, right_endpt, trap_count, base_len, estimate)
             use precision
+            use iso_fortran_env
             IMPLICIT NONE
             REAL(long), INTENT(IN) :: left_endpt
             REAL(long), INTENT(IN) :: right_endpt
@@ -22,6 +50,7 @@ program main
 
        subroutine OpenFile(a, b, n)
             use precision
+            use iso_fortran_env
             implicit none
             REAL(long), INTENT(OUT) :: a
             REAL(long), INTENT(OUT) :: b
@@ -44,6 +73,13 @@ program main
     REAL(long) :: local_b
     REAL(long) :: local_int
     REAL(long) :: total_int
+    REAL(long) :: estimation                        ! Estimacion del calculo
+    REAL(long) :: error                             ! Error encontrado
+    REAL(long) :: elapsed                           ! Tiempo que tomo ejecutarse el programa
+    REAL(long) :: start_clock                       ! Tiempo de inicio
+    REAL(long) :: stop_clock                        ! Tiempo de termino
+    CHARACTER(len=38) :: start                      ! Hora de inicio
+    CHARACTER(len=38) :: end                        ! Hora de termino
     
     ! Let the system do what it needs to start up MPI
     call MPI_INIT(ierror)
@@ -52,8 +88,20 @@ program main
     ! Find out how many processes are being used
     call MPI_COMM_SIZE(MPI_COMM_WORLD, comm_sz, ierror)
     
-    ! Assignment
-    CALL OpenFile(a, b, n)
+    if (my_rank == 0) then
+
+        ! Establece la hora de inicio
+        start = timestamp()
+        call CPU_TIME(start_clock)
+
+         ! Assignment
+        CALL OpenFile(a, b, n)
+        
+    end if
+
+    call MPI_BCAST(a, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror)
+    call MPI_BCAST(b, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror)
+    call MPI_BCAST(n, 1, MPI_LONG, 0, MPI_COMM_WORLD, ierror)
 
     h = (b - a) / n         ! h is the same for all processes 
     local_n = n / comm_sz   ! So is the number of trapezoids 
@@ -65,24 +113,26 @@ program main
     local_b = local_a + local_n * h
     call Trap (local_a, local_b, local_n, h, local_int)
 
-    ! Add up the integrals calculated by each process
-    if(my_rank == 0) then
-        total_int = local_int
-
-        do source = 1, comm_sz - 1, 1
-
-            call MPI_RECV(local_int, 1, MPI_DOUBLE, source, 0, MPI_COMM_WORLD, status, ierror)
-            total_int = total_int + local_int
-
-        end do
-    else
-        call MPI_SEND(local_int, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, ierror)
-    end if
+    call MPI_REDUCE(local_int, total_int, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierror)
 
     ! Print the result
     if (my_rank == 0) then
-        write (*, *) 'With n = ' , n, ' trapezoids, our estimate'
-        write (*, *) 'of the integral from', a, ' to ' , b, ' = ', total_int
+        
+         ! Calculo estimado con la formula a^2*N^3
+        estimation = 9.0_long
+
+        ! Calcula el % de error
+        error = DABS(total_int - estimation) / estimation * 100.0_long
+
+        end = timestamp()
+        call CPU_TIME(stop_clock)
+        
+        ! Calcula el tiempo que tomo ejecutar el programa
+        elapsed =  stop_clock - start_clock
+
+        ! Guarda el resultado en un archivo
+        call SaveFile(start, end, error, elapsed, N, comm_sz)
+
     end if    
     
     call MPI_FINALIZE(ierror)
@@ -104,6 +154,7 @@ end program main
 !---------------------------------------------------------------------
 SUBROUTINE Trap(left_endpt, right_endpt, trap_count, base_len, estimate)
     use precision
+    use iso_fortran_env
     IMPLICIT NONE
     REAL(long), INTENT(IN) :: left_endpt
     REAL(long), INTENT(IN) :: right_endpt
@@ -128,6 +179,7 @@ END SUBROUTINE Trap
 
 subroutine OpenFile(a, b, n)
     use precision
+    use iso_fortran_env
     implicit none
     REAL(long), INTENT(OUT) :: a
     REAL(long), INTENT(OUT) :: b
@@ -138,17 +190,45 @@ subroutine OpenFile(a, b, n)
     input_file = 'parameters.dat'
 
     OPEN(UNIT=1,file=input_file,ACTION="READ",IOSTAT=stat,STATUS='OLD')
-    if (stat .ne. 0) then
-        a = 0.0_long
-        b = 3.0_long
-        n = 1024
-        write(*, *) 'No se encontro el archivo \"parameters.dat\" se usaran parametros por defecto.'
-    else 
-        READ(1, *) a
-        READ(1, *) b
-        READ(1,*) n
-    end if
+    !a = 0.0_long
+    !b = 3.0_long
+    READ(1, *) a
+    READ(1, *) b
+    READ(1, *) n
 
     CLOSE(1)
 
 end subroutine OpenFile
+
+
+! Crea un archivo de salida con la hora de inicio, de termino y el tiempo que tomo correr el programa
+! Asi como el porcentaje de error
+subroutine SaveFile(start, end, error, elapsed, N, process)
+    use precision
+    CHARACTER(len=38), INTENT(IN) :: start
+    CHARACTER(len=38), INTENT(IN) :: end
+    REAL(long), INTENT(IN) :: error
+    REAL(long), INTENT(IN) :: elapsed
+    INTEGER, INTENT(IN) :: N
+    INTEGER, INTENT(IN) :: process
+    CHARACTER(len = 84) :: file_name
+    CHARACTER(len = 15) :: Nstring
+    CHARACTER(len = 1) :: processString
+
+    write(Nstring, "(I15)") N 
+    write(processString, "(I1)") process
+
+    file_name = 'mpi-f90-'//processString//'-'//Nstring//'-'//trim(end)//'.txt'
+    
+    open (unit=10,file=file_name)
+    write(10,*) 'Hora de inicio'
+    write(10,*) start
+    write(10,*) 'Hora de termino'
+    write(10,*) end
+    write(10,*) 'Tiempo de ejecucion'
+    write(10,*) elapsed
+    write(10,*) 'Error'
+    write(10,*) error
+    close(10)
+
+end subroutine SaveFile

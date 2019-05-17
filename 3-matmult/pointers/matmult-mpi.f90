@@ -161,7 +161,7 @@ program matmult
         estimation = N ** 3_long * a ** 2_long
 
         ! Calcula el % de error
-        error = DABS(result - estimation) / estimation * 100.0_long;
+        error = DABS(result - estimation) / estimation * 100.0_long
 
     else 
         ! Verifica si es el ultimo proceso para calcular el reciduo
